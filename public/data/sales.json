@@ -1,0 +1,27 @@
+[
+    {
+        "name": "Jan",
+        "value": 400,
+        "users": 240
+    },
+    {
+        "name": "Feb",
+        "value": 40,
+        "users": 139
+    },
+    {
+        "name": "Mar",
+        "value": 200,
+        "users": 980
+    },
+    {
+        "name": "Apr",
+        "value": 278,
+        "users": 390
+    },
+    {
+        "name": "May",
+        "value": 189,
+        "users": 480
+    }
+]
