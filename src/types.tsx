@@ -19,4 +19,8 @@ export interface ChartConfig {
   type: ChartType;
   dataSourceId: string;
   style: ChartStyle;
+  refreshInterval?: number; // 毫秒 (例：30000 = 30 秒)
+  fields?: string[]; // 要顯示的數據欄位
 }
+
+

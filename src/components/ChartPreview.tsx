@@ -29,9 +29,10 @@ export const ChartPreview: React.FC<Props> = ({ config, dataSource }) => {
 
   useEffect(() => {
     if (dataSource) {
-      fetchData(dataSource);
+      fetchData({ ...dataSource, refreshInterval: config.refreshInterval });
     }
-  }, [dataSource?.id]); // 注意監聽 id
+  }, [dataSource?.id, config.refreshInterval]);
+
 
   if (!dataSource) {
     return <Typography>⚠️ 尚未選擇資料來源</Typography>;
@@ -45,7 +46,7 @@ export const ChartPreview: React.FC<Props> = ({ config, dataSource }) => {
   if (err) return <Typography color="error">❌ 載入失敗: {err}</Typography>;
   if (!data) return <Typography>等待載入資料...</Typography>;
 
-  const { type, style } = config;
+  const { type, style, fields } = config;
 
   const colors = {
     default: ["#8884d8", "#82ca9d"],
@@ -62,28 +63,31 @@ export const ChartPreview: React.FC<Props> = ({ config, dataSource }) => {
         </Typography>
 
         {type === "line" && (
-          <LineChart width={400} height={250} data={data}>
+          <LineChart width={400} height={250} data={data} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
             {style.showGrid && <CartesianGrid strokeDasharray="3 3" />}
             <XAxis dataKey="name" />
             <YAxis />
             <Tooltip />
             {style.showLegend && <Legend />}
-            <Line type="monotone" dataKey="value" stroke={colorSet[0]} />
-            <Line type="monotone" dataKey="users" stroke={colorSet[1]} />
+            {(fields ?? []).map((f, i) => (
+              <Line key={f} type="monotone" dataKey={f} stroke={colorSet[i]} />
+            ))}
           </LineChart>
         )}
 
         {type === "bar" && (
-          <BarChart width={400} height={250} data={data}>
-            {style.showGrid && <CartesianGrid strokeDasharray="3 3" />}
+          <BarChart width={400} height={250} data={data} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
             <YAxis />
             <Tooltip />
             {style.showLegend && <Legend />}
-            <Bar dataKey="value" fill={colorSet[0]} />
-            <Bar dataKey="users" fill={colorSet[1]} />
+            {(fields ?? []).map((f, i) => (
+              <Bar key={f} dataKey={f} fill={colorSet[i]} />
+            ))}
           </BarChart>
         )}
+
 
         {type === "pie" && (
           <PieChart width={400} height={250}>

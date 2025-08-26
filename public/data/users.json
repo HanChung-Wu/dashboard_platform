@@ -2,26 +2,26 @@
     {
         "name": "Jan",
         "value": 400,
-        "users": 851
+        "revenue": 851
     },
     {
         "name": "Feb",
         "value": 110,
-        "users": 334
+        "revenue": 334
     },
     {
         "name": "Mar",
         "value": 237,
-        "users": 1025
+        "revenue": 1025
     },
     {
         "name": "Apr",
         "value": 278,
-        "users": 451
+        "revenue": 451
     },
     {
         "name": "May",
         "value": 842,
-        "users": 480
+        "revenue": 480
     }
 ]

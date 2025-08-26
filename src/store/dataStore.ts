@@ -17,8 +17,15 @@ export const useDataStore = create<DataState>((set, get) => ({
   fetchData: async (ds: DataSource) => {
     const { timers } = get();
 
-    // 如果已經在 polling，就直接回傳
-    if (timers[ds.id]) return;
+    // 如果已經有 timer，就清掉 (避免重複)
+    if (timers[ds.id]) {
+      clearInterval(timers[ds.id]);
+      set((state) => {
+        const newTimers = { ...state.timers };
+        delete newTimers[ds.id];
+        return { timers: newTimers };
+      });
+    }
 
     const load = async () => {
       set((state) => ({
@@ -27,7 +34,7 @@ export const useDataStore = create<DataState>((set, get) => ({
       }));
 
       try {
-        const res = await fetch(ds.url + `?t=${Date.now()}`); // 加 timestamp 防快取
+        const res = await fetch(ds.url + `?t=${Date.now()}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
 
@@ -55,3 +62,4 @@ export const useDataStore = create<DataState>((set, get) => ({
     }
   },
 }));
+
