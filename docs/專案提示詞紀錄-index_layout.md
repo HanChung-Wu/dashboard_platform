@@ -951,11 +951,147 @@ export const TopNav: React.FC = () => {
 
 需要我幫你加上 ESC 鍵關閉或搜尋功能嗎？
 
+## Copilot 提問 RightPanel 元件
+TopNav 結構已經差不多，我們接下來實作 RightPanel 的隱藏與滑入效果
+- 平時不顯示，當滑鼠滑至右側會顯示並覆蓋主內容區塊。
+- 根據不同模組會顯示不同內容
+- 模組可以設定是否啟用此元件，預設為"啟用"
+
+## Copilot 提問 RightPanel 元件
+
+很好，我們可以將 `RightPanel` 實作成一個根據滑鼠位置顯示的浮動元件，並透過 Zustand 控制其啟用與內容。以下是完整的實作步驟：
+
+---
+
+### ✅ 第一步：擴充 Zustand 狀態管理
+
+在 `stores/uiStore.ts` 中加入 `rightPanelEnabled` 與 `rightPanelContent` 狀態：
+
+```ts
+// stores/uiStore.ts
+import { create } from "zustand";
+
+interface UIState {
+  rightPanelEnabled: boolean;
+  rightPanelContent: React.ReactNode;
+  setRightPanelEnabled: (enabled: boolean) => void;
+  setRightPanelContent: (content: React.ReactNode) => void;
+}
+
+export const useUIStore = create<UIState>((set) => ({
+  rightPanelEnabled: true,
+  rightPanelContent: null,
+  setRightPanelEnabled: (enabled) => set({ rightPanelEnabled: enabled }),
+  setRightPanelContent: (content) => set({ rightPanelContent: content }),
+}));
+```
+
+---
+
+### ✅ 第二步：建立 `RightPanel` 元件
+
+```tsx
+// components/layout/RightPanel.tsx
+import React, { useState } from "react";
+import { Box } from "@mui/material";
+import { useUIStore } from "../../stores/uiStore";
+
+export const RightPanel: React.FC = () => {
+  const { rightPanelEnabled, rightPanelContent } = useUIStore();
+  const [visible, setVisible] = useState(false);
+
+  if (!rightPanelEnabled) return null;
+
+  return (
+    <Box
+      onMouseEnter={() => setVisible(true)}
+      onMouseLeave={() => setVisible(false)}
+      sx={{
+        position: "fixed",
+        top: 60, // 避開 TopNav
+        right: 0,
+        width: visible ? "300px" : "0px",
+        height: "calc(100vh - 60px)",
+        overflow: "hidden",
+        transition: "width 0.3s ease",
+        bgcolor: "#f5f5f5",
+        zIndex: 1200,
+        boxShadow: visible ? "-2px 0 5px rgba(0,0,0,0.1)" : "none",
+      }}
+    >
+      <Box sx={{ p: 2 }}>{rightPanelContent}</Box>
+    </Box>
+  );
+};
+```
+
+---
+
+### ✅ 第三步：在 `Layout.tsx` 中加入 `RightPanel`
+
+```tsx
+// components/layout/Layout.tsx
+import { RightPanel } from "./RightPanel";
+
+export const Layout: React.FC = ({ children }) => {
+  return (
+    <>
+      <TopNav />
+      <Sidebar />
+      <Box sx={{ ml: "240px", mr: "0px", pt: "60px" }}>
+        {children}
+      </Box>
+      <RightPanel />
+    </>
+  );
+};
+```
+
+---
+
+### ✅ 第四步：在各模組頁面中設定是否啟用與內容
+
+例如在 `DashboardPage.tsx`：
+
+```tsx
+import { useEffect } from "react";
+import { useUIStore } from "../stores/uiStore";
+
+export const DashboardPage: React.FC = () => {
+  const { setRightPanelEnabled, setRightPanelContent } = useUIStore();
+
+  useEffect(() => {
+    setRightPanelEnabled(true);
+    setRightPanelContent(<div>這是 Dashboard 的右側內容</div>);
+    return () => {
+      setRightPanelEnabled(true); // 預設啟用
+      setRightPanelContent(null);
+    };
+  }, []);
+
+  return <div>主內容區塊</div>;
+};
+```
+
+---
+
+### ✅ 額外建議
+
+- 若要支援「滑鼠滑至右側才顯示」，也可以在 `Layout.tsx` 加入一個透明區域偵測滑入。
+- 若要支援「模組不啟用右側欄」，只需在該頁面 `useEffect` 中設定 `setRightPanelEnabled(false)` 即可。
+
+---
+
+需要我幫你加上滑入偵測區域或是自動根據路由切換內容嗎？
+
+推薦三問: 
+- 怎麼加右側滑入偵測區域
+- 如何根據路由自動切換 RightPanel 內容
+- RightPanel 動畫效果可以再優化嗎
+
+## Copilot 提問 Layout+RightPanel 滑入偵測區
 
 
 
-
-
-## Copilot 回答 TopNav 元件
 
 

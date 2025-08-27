@@ -2,11 +2,19 @@
 import { create } from "zustand";
 
 interface UIState {
+  rightPanelEnabled: boolean;
+  rightPanelContent: React.ReactNode;
+  setRightPanelEnabled: (enabled: boolean) => void;
+  setRightPanelContent: (content: React.ReactNode) => void;
   rightPanelVisible: boolean;
-  toggleRightPanel: (visible: boolean) => void;
+  setRightPanelVisible: (visible: boolean) => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
+  rightPanelEnabled: true,
+  rightPanelContent: null,
+  setRightPanelEnabled: (enabled) => set({ rightPanelEnabled: enabled }),
+  setRightPanelContent: (content) => set({ rightPanelContent: content }),
   rightPanelVisible: false,
-  toggleRightPanel: (visible) => set({ rightPanelVisible: visible }),
+  setRightPanelVisible: (visible) => set({ rightPanelVisible: visible }),
 }));
