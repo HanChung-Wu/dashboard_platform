@@ -1090,8 +1090,495 @@ export const DashboardPage: React.FC = () => {
 - RightPanel 動畫效果可以再優化嗎
 
 ## Copilot 提問 Layout+RightPanel 滑入偵測區
+怎麼加右側滑入偵測區域
+
+## Copilot 回答 Layout+RightPanel 滑入偵測區
+你可以在畫面最右側加入一個「滑入偵測區域」，當滑鼠移入該區域時觸發 `RightPanel` 顯示。這個區域可以是一個寬度約 10px 的透明 `Box`，固定在畫面右側。
+
+以下是實作方式：
+
+---
+
+### ✅ 在 `Layout.tsx` 加入滑入偵測區域
+
+```tsx
+// components/layout/Layout.tsx
+import { RightPanel } from "./RightPanel";
+import { useUIStore } from "../../stores/uiStore";
+
+export const Layout: React.FC = ({ children }) => {
+  const { rightPanelEnabled } = useUIStore();
+  const [hoveringRightEdge, setHoveringRightEdge] = useState(false);
+
+  return (
+    <>
+      <TopNav />
+      <Sidebar />
+      <Box sx={{ ml: "240px", mr: "0px", pt: "60px" }}>
+        {children}
+      </Box>
+
+      {/* 滑入偵測區域 */}
+      {rightPanelEnabled && (
+        <Box
+          onMouseEnter={() => setHoveringRightEdge(true)}
+          onMouseLeave={() => setHoveringRightEdge(false)}
+          sx={{
+            position: "fixed",
+            top: 60,
+            right: 0,
+            width: "10px",
+            height: "calc(100vh - 60px)",
+            zIndex: 1100,
+            backgroundColor: "transparent",
+          }}
+        />
+      )}
+
+      {/* 右側面板 */}
+      <RightPanel hovering={hoveringRightEdge} />
+    </>
+  );
+};
+```
+
+---
+
+### ✅ 修改 `RightPanel.tsx` 接收 `hovering` 狀態
+
+```tsx
+// components/layout/RightPanel.tsx
+interface RightPanelProps {
+  hovering: boolean;
+}
+
+export const RightPanel: React.FC<RightPanelProps> = ({ hovering }) => {
+  const { rightPanelEnabled, rightPanelContent } = useUIStore();
+
+  if (!rightPanelEnabled) return null;
+
+  return (
+    <Box
+      sx={{
+        position: "fixed",
+        top: 60,
+        right: 0,
+        width: hovering ? "300px" : "0px",
+        height: "calc(100vh - 60px)",
+        overflow: "hidden",
+        transition: "width 0.3s ease",
+        bgcolor: "#f5f5f5",
+        zIndex: 1200,
+        boxShadow: hovering ? "-2px 0 5px rgba(0,0,0,0.1)" : "none",
+      }}
+    >
+      <Box sx={{ p: 2 }}>{rightPanelContent}</Box>
+    </Box>
+  );
+};
+```
+
+---
+
+這樣就能在滑鼠靠近右側邊緣時自動顯示 `RightPanel`，並覆蓋主內容區塊。
+
+需要我幫你加上「滑出後延遲隱藏」或「點擊右側區域固定顯示」的功能嗎？
 
 
+## Copilot 提問 Layout+RightPanel 滑入偵測區 補充 Layout.tsx
+```tsx
+// components/layout/Layout.tsx
+import { Sidebar } from "./Sidebar";
+import { TopNav } from "./TopNav";
+import { RightPanel } from "./RightPanel";
+import { Outlet } from "react-router-dom";
+import "./layout.css";
 
+export const Layout = () => {
+  return (
+    <div className="layout-container">
+      <Sidebar />
+      <div className="main-area">
+        <TopNav />
+        <div className="main-content">
+          <Outlet />
+        </div>
+      </div>
+      <RightPanel />
+    </div>
+  );
+};
+```
 
+## Copilot 回答 Layout+RightPanel 滑入偵測區 補充 Layout.tsx
+感謝你提供 `Layout.tsx` 的結構！既然你使用了 CSS class 來排版，我們可以直接在 `layout.css` 中加入「右側滑入偵測區域」的樣式與邏輯，並在 `RightPanel` 元件中處理滑入顯示。
 
+---
+
+### ✅ 第一步：在 `Layout.tsx` 加入滑入偵測區域
+
+你可以在 `RightPanel` 前面加上一個偵測區塊：
+
+```tsx
+// components/layout/Layout.tsx
+import { Sidebar } from "./Sidebar";
+import { TopNav } from "./TopNav";
+import { RightPanel } from "./RightPanel";
+import { Outlet } from "react-router-dom";
+import { useState } from "react";
+import "./layout.css";
+
+export const Layout = () => {
+  const [hoveringRightEdge, setHoveringRightEdge] = useState(false);
+
+  return (
+    <div className="layout-container">
+      <Sidebar />
+      <div className="main-area">
+        <TopNav />
+        <div className="main-content">
+          <Outlet />
+        </div>
+      </div>
+
+      {/* 滑入偵測區域 */}
+      <div
+        className="right-hover-zone"
+        onMouseEnter={() => setHoveringRightEdge(true)}
+        onMouseLeave={() => setHoveringRightEdge(false)}
+      />
+
+      <RightPanel hovering={hoveringRightEdge} />
+    </div>
+  );
+};
+```
+
+---
+
+### ✅ 第二步：在 `layout.css` 加入偵測區域樣式
+
+```css
+/* layout.css */
+.layout-container {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+.main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+}
+
+/* 右側滑入偵測區域 */
+.right-hover-zone {
+  position: fixed;
+  top: 60px; /* 避開 TopNav */
+  right: 0;
+  width: 10px;
+  height: calc(100vh - 60px);
+  z-index: 1100;
+  background-color: transparent;
+}
+```
+
+---
+
+### ✅ 第三步：修改 `RightPanel.tsx` 接收 `hovering` 狀態
+
+```tsx
+// components/layout/RightPanel.tsx
+import React from "react";
+import { Box } from "@mui/material";
+import { useUIStore } from "../../stores/uiStore";
+
+interface RightPanelProps {
+  hovering: boolean;
+}
+
+export const RightPanel: React.FC<RightPanelProps> = ({ hovering }) => {
+  const { rightPanelEnabled, rightPanelContent } = useUIStore();
+
+  if (!rightPanelEnabled) return null;
+
+  return (
+    <Box
+      sx={{
+        position: "fixed",
+        top: 60,
+        right: 0,
+        width: hovering ? "300px" : "0px",
+        height: "calc(100vh - 60px)",
+        overflow: "hidden",
+        transition: "width 0.3s ease",
+        bgcolor: "#f5f5f5",
+        zIndex: 1200,
+        boxShadow: hovering ? "-2px 0 5px rgba(0,0,0,0.1)" : "none",
+      }}
+    >
+      <Box sx={{ p: 2 }}>{rightPanelContent}</Box>
+    </Box>
+  );
+};
+```
+
+---
+
+這樣就完成了右側滑入偵測區域的功能 🎉  
+是否需要我幫你加上「滑出後延遲隱藏」或「點擊固定顯示」的功能？
+
+## Copilot 提問 Layout+RightPanel 滑入偵測區 補充 uiStore.ts
+```ts
+// stores/uiStore.ts
+import { create } from "zustand";
+
+interface UIState {
+  rightPanelEnabled: boolean;
+  rightPanelContent: React.ReactNode;
+  setRightPanelEnabled: (enabled: boolean) => void;
+  setRightPanelContent: (content: React.ReactNode) => void;
+  rightPanelVisible: boolean;
+  setRightPanelVisible: (visible: boolean) => void;
+}
+
+export const useUIStore = create<UIState>((set) => ({
+  rightPanelEnabled: true,
+  rightPanelContent: null,
+  setRightPanelEnabled: (enabled) => set({ rightPanelEnabled: enabled }),
+  setRightPanelContent: (content) => set({ rightPanelContent: content }),
+  rightPanelVisible: false,
+  setRightPanelVisible: (visible) => set({ rightPanelVisible: visible }),
+}));
+```
+
+## Copilot 回答 Layout+RightPanel 滑入偵測區 補充 uiStore.ts
+你已經在 `uiStore.ts` 中加入了 `rightPanelVisible` 狀態，這非常適合用來控制右側面板的顯示與隱藏。接下來我們可以將滑入偵測區域與 `RightPanel` 的顯示邏輯改為使用這個狀態，讓狀態管理更集中、可控性更高。
+
+---
+
+### ✅ 更新 `Layout.tsx`：滑入時設定 `rightPanelVisible`
+
+```tsx
+// components/layout/Layout.tsx
+import { Sidebar } from "./Sidebar";
+import { TopNav } from "./TopNav";
+import { RightPanel } from "./RightPanel";
+import { Outlet } from "react-router-dom";
+import { useUIStore } from "../../stores/uiStore";
+import "./layout.css";
+
+export const Layout = () => {
+  const { rightPanelEnabled, setRightPanelVisible } = useUIStore();
+
+  return (
+    <div className="layout-container">
+      <Sidebar />
+      <div className="main-area">
+        <TopNav />
+        <div className="main-content">
+          <Outlet />
+        </div>
+      </div>
+
+      {/* 滑入偵測區域 */}
+      {rightPanelEnabled && (
+        <div
+          className="right-hover-zone"
+          onMouseEnter={() => setRightPanelVisible(true)}
+          onMouseLeave={() => setRightPanelVisible(false)}
+        />
+      )}
+
+      <RightPanel />
+    </div>
+  );
+};
+```
+
+---
+
+### ✅ 更新 `RightPanel.tsx`：使用 `rightPanelVisible` 控制顯示
+
+```tsx
+// components/layout/RightPanel.tsx
+import React from "react";
+import { Box } from "@mui/material";
+import { useUIStore } from "../../stores/uiStore";
+
+export const RightPanel: React.FC = () => {
+  const { rightPanelEnabled, rightPanelVisible, rightPanelContent } = useUIStore();
+
+  if (!rightPanelEnabled) return null;
+
+  return (
+    <Box
+      sx={{
+        position: "fixed",
+        top: 60,
+        right: 0,
+        width: rightPanelVisible ? "300px" : "0px",
+        height: "calc(100vh - 60px)",
+        overflow: "hidden",
+        transition: "width 0.3s ease",
+        bgcolor: "#f5f5f5",
+        zIndex: 1200,
+        boxShadow: rightPanelVisible ? "-2px 0 5px rgba(0,0,0,0.1)" : "none",
+      }}
+    >
+      <Box sx={{ p: 2 }}>{rightPanelContent}</Box>
+    </Box>
+  );
+};
+```
+
+---
+
+### ✅ 補充：`layout.css` 保持不變
+
+```css
+/* layout.css */
+.right-hover-zone {
+  position: fixed;
+  top: 60px;
+  right: 0;
+  width: 10px;
+  height: calc(100vh - 60px);
+  z-index: 1100;
+  background-color: transparent;
+}
+```
+
+---
+
+這樣就完成了使用 Zustand 控制右側面板顯示的整合 🎯  
+是否需要我幫你加上「延遲隱藏」或「點擊固定顯示」的功能？
+
+## Copilot 提問 Layout+RightPanel 滑入偵測區 補充 layout.css
+```css
+/* components/layout/layout.css */
+.layout-container {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+.sidebar {
+    width: 240px;
+    background-color: #1e1e2f;
+}
+
+.main-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.top-nav {
+    height: 60px;
+    background-color: #fff;
+    border-bottom: 1px solid #ddd;
+}
+
+.main-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+}
+
+.right-panel {
+    position: fixed;
+    right: 0;
+    top: 60px;
+    width: 300px;
+    height: calc(100vh - 60px);
+    background-color: #f9f9f9;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+}
+
+.right-panel.visible {
+    transform: translateX(0);
+}
+
+/* 右側滑入偵測區域 */
+.right-hover-zone {
+    position: fixed;
+    top: 60px;
+    /* 避開 TopNav */
+    right: 0;
+    width: 10px;
+    height: calc(100vh - 60px);
+    z-index: 1100;
+    background-color: transparent;
+}
+```
+
+## Copilot 回答 Layout+RightPanel 滑入偵測區 補充 layout.css
+你已經在 CSS 中定義了 `.right-panel` 與 `.right-panel.visible` 的滑入效果，這非常清楚 👍  
+接下來只需要在 `RightPanel.tsx` 中套用這些 className，就能讓右側面板根據 Zustand 狀態滑入/隱藏。
+
+---
+
+### ✅ 修改 `RightPanel.tsx` 使用 className 控制動畫
+
+```tsx
+// components/layout/RightPanel.tsx
+import React from "react";
+import { useUIStore } from "../../stores/uiStore";
+import "./layout.css";
+
+export const RightPanel: React.FC = () => {
+  const { rightPanelEnabled, rightPanelVisible, rightPanelContent } = useUIStore();
+
+  if (!rightPanelEnabled) return null;
+
+  return (
+    <div className={`right-panel ${rightPanelVisible ? "visible" : ""}`}>
+      {rightPanelContent}
+    </div>
+  );
+};
+```
+
+---
+
+### ✅ 確保 `Layout.tsx` 中滑入偵測區域已設定
+
+```tsx
+// components/layout/Layout.tsx
+import { useUIStore } from "../../stores/uiStore";
+
+export const Layout = () => {
+  const { rightPanelEnabled, setRightPanelVisible } = useUIStore();
+
+  return (
+    <div className="layout-container">
+      {/* ...其他元件 */}
+      {rightPanelEnabled && (
+        <div
+          className="right-hover-zone"
+          onMouseEnter={() => setRightPanelVisible(true)}
+          onMouseLeave={() => setRightPanelVisible(false)}
+        />
+      )}
+      <RightPanel />
+    </div>
+  );
+};
+```
+
+---
+
+這樣就完成了右側面板的滑入效果整合 ✅  
+是否需要我幫你加上「滑出後延遲隱藏」或「點擊固定顯示」的功能？
