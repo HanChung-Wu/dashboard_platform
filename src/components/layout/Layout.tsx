@@ -7,8 +7,7 @@ import { useUIStore } from "../../stores/uiStore";
 import "./layout.css";
 
 export const Layout = () => {
-  const { rightPanelEnabled, setRightPanelVisible, rightPanelVisible } =
-    useUIStore();
+  const { rightPanelEnabled } = useUIStore();
 
   return (
     <div className="layout-container">
@@ -19,17 +18,7 @@ export const Layout = () => {
           <Outlet />
         </div>
       </div>
-
-      {/* 滑入偵測區域 */}
-      {rightPanelEnabled && (
-        <div
-          className={`right-hover-zone ${rightPanelVisible ? "visible" : ""}`}
-          onMouseEnter={() => setRightPanelVisible(true)}
-          onMouseLeave={() => setRightPanelVisible(false)}
-        />
-      )}
-
-      <RightPanel />
+      {rightPanelEnabled ? <RightPanel /> : null}
     </div>
   );
 };

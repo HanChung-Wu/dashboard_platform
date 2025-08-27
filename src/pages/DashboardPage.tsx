@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useUIStore } from "../stores/uiStore";
 
 export const DashboardPage: React.FC = () => {
-  const { setRightPanelEnabled, setRightPanelContent } = useUIStore();
+  const { setRightPanelEnabled, setRightPanelContent, rightPanelEnabled } = useUIStore();
 
   useEffect(() => {
     setRightPanelEnabled(true);
@@ -13,5 +13,5 @@ export const DashboardPage: React.FC = () => {
     };
   }, []);
 
-  return <div>主內容區塊</div>;
+  return <div>主內容區塊<button onClick={() => { setRightPanelEnabled(!rightPanelEnabled) }}>測試用</button></div>;
 };
