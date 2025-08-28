@@ -4,13 +4,13 @@ import { useUIStore } from "../../stores/uiStore";
 import "./layout.css";
 
 export const RightPanel: React.FC = () => {
-  const { rightPanelEnabled, rightPanelVisible, rightPanelContent } =
+  const { rightPanelEnabled, rightPanelContent } =
     useUIStore();
 
   if (!rightPanelEnabled) return null;
 
   return (
-    <div className={`right-panel ${rightPanelVisible ? "visible" : ""}`}>
+    <div className="right-panel">
       {rightPanelContent}
     </div>
   );
