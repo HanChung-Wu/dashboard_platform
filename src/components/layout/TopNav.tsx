@@ -1,37 +1,11 @@
-// components/layout/TopNav.tsx
+// src/components/layout/TopNav.tsx
 import React, { useState } from "react";
-import {
-  Box,
-  Typography,
-  IconButton,
-  Menu,
-  MenuItem,
-  Modal,
-  TextField,
-} from "@mui/material";
+import { Box, IconButton, Modal, TextField } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import { useNavigate, useLocation } from "react-router-dom";
+import { Breadcrumb } from "./Breadcrumb";
 
 export const TopNav: React.FC = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [searchOpen, setSearchOpen] = useState(false);
-
-  const pathSegments = location.pathname.split("/").filter(Boolean);
-
-  const handleBreadcrumbClick = (index: number) => {
-    const path = "/" + pathSegments.slice(0, index + 1).join("/");
-    navigate(path);
-  };
-
-  const handleMoreClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMoreClose = () => {
-    setAnchorEl(null);
-  };
 
   const handleSearchOpen = () => setSearchOpen(true);
   const handleSearchClose = () => setSearchOpen(false);
@@ -49,67 +23,7 @@ export const TopNav: React.FC = () => {
       }}
     >
       {/* Breadcrumb 區塊 */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        {pathSegments.length > 3 ? (
-          <>
-            <Typography
-              sx={{ cursor: "pointer" }}
-              onClick={() => handleBreadcrumbClick(0)}
-            >
-              {pathSegments[0]}
-            </Typography>
-            <Typography>{">"}</Typography>
-            <Typography
-              sx={{ cursor: "pointer" }}
-              onClick={() => handleBreadcrumbClick(pathSegments.length - 2)}
-            >
-              {pathSegments[pathSegments.length - 2]}
-            </Typography>
-            <Typography>{">"}</Typography>
-            <Typography
-              sx={{ cursor: "pointer", fontWeight: "bold" }}
-              onClick={() => handleBreadcrumbClick(pathSegments.length - 1)}
-            >
-              {pathSegments[pathSegments.length - 1]}
-            </Typography>
-            <IconButton size="small" onClick={handleMoreClick}>
-              <Typography fontSize={12}>...</Typography>
-            </IconButton>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleMoreClose}
-            >
-              {pathSegments.slice(1, pathSegments.length - 2).map((seg, i) => (
-                <MenuItem
-                  key={i}
-                  onClick={() => {
-                    handleBreadcrumbClick(i + 1);
-                    handleMoreClose();
-                  }}
-                >
-                  {seg}
-                </MenuItem>
-              ))}
-            </Menu>
-          </>
-        ) : (
-          pathSegments.map((seg, i) => (
-            <React.Fragment key={i}>
-              {i > 0 && <Typography>{">"}</Typography>}
-              <Typography
-                sx={{
-                  cursor: "pointer",
-                  fontWeight: i === pathSegments.length - 1 ? "bold" : "normal",
-                }}
-                onClick={() => handleBreadcrumbClick(i)}
-              >
-                {seg}
-              </Typography>
-            </React.Fragment>
-          ))
-        )}
-      </Box>
+      <Breadcrumb />
 
       {/* 搜尋按鈕 */}
       <IconButton onClick={handleSearchOpen}>

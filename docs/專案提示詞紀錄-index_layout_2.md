@@ -120,7 +120,7 @@ useEffect(() => {
 
 需要我幫你整合成一個完整的元件範例嗎？或者你想先試試其中一種方法？
 
-推薦三問
+### 推薦三問
 - 幫我整合成完整元件範例
 - 想看 pointer-events 控制的詳細寫法
 - mousemove 方案有沒有潛在副作用
@@ -169,7 +169,7 @@ RightPanel 滑入效果並不理想：
 
 ### 檔案當前內容
 ```tsx
-// components/layout/Layout.tsx
+// src/components/layout/Layout.tsx
 import { Sidebar } from "./Sidebar";
 import { TopNav } from "./TopNav";
 import { RightPanel } from "./RightPanel";
@@ -277,7 +277,7 @@ export const Layout = () => {
 ```
 
 ```tsx
-// components/layout/RightPanel.tsx
+// src/components/layout/RightPanel.tsx
 import React from "react";
 import { useUIStore } from "../../stores/uiStore";
 import "./layout.css";
@@ -456,7 +456,7 @@ rightPanelPinned: JSON.parse(localStorage.getItem("rightPanelPinned") || "false"
 
 需要我幫你整理成 PR-ready 的 commit 或是幫你拆分成多個元件嗎？還是你想進一步優化內容注入的方式？
 
-推薦三問
+### 推薦三問
 - 幫我整理成 PR-ready commit 訊息
 - 內容注入有推薦的最佳做法嗎
 - 怎麼讓 RightPanel 支援不同頁面自訂內容
@@ -577,7 +577,7 @@ export const DashboardPage = () => {
 
 需要我幫你把這些整理成一個 `RightPanelProvider` 元件或是建立一個 hook 來簡化頁面設定嗎？還是你想進一步支援 lazy loading 或 async content？
 
-推薦三問
+### 推薦三問
 - 幫我寫 RightPanelProvider 元件範例
 - 如何用 hook 簡化 RightPanel 設定
 - RightPanel 支援 lazy loading 怎麼做
@@ -682,7 +682,7 @@ export const DashboardPage = () => {
 
 需要我幫你加上 loading 狀態或是支援 async content 嗎？還是你想讓 RightPanel 支援 tab 或多段內容切換？
 
-推薦三問
+### 推薦三問
 - 加上 RightPanel lazy loading 範例
 - RightPanel 支援 async content 怎麼做
 - 想要 RightPanel 有 tab 切換怎麼設計
@@ -742,7 +742,7 @@ export const MyComponent = () => {
 
 需要我幫你檢查哪些檔案可能違反這個規則，或幫你重構成乾淨的結構嗎？
 
-推薦三問
+### 推薦三問
 - 幫我檢查專案還有哪些檔案違反這個規則
 - 協助重構 RightPanelProvider 相關檔案結構
 - 有哪些常見情境會踩到這個 eslint 規則
@@ -849,6 +849,52 @@ export const DashboardPage = () => {
 
 需要我幫你加上 lazy loading 或 tab 切換功能嗎？也可以幫你整合 MUI 的 Drawer 或 Popover 元件來強化互動性喔！
 
+## Copilot 提問 專案背景提示2
+如果我要開新的聊天，如何給予你完整的背景提示，能讓你快速進入狀況，幫我延續現在的狀態解決問題
+
+## Copilot 回答 專案背景提示2
+很棒的問題！如果你要開啟新的聊天但希望我能**延續目前的專案背景與狀態**，你可以在新對話一開始提供一段**背景提示**，格式如下：
+
+---
+
+### 🧩 建議背景提示格式：
+
+```markdown
+【專案背景】
+- 技術：Vite + React + MUI + Zustand + TypeScript
+- 類型：資料視覺化儀表板
+- 架構：
+  src/
+  ├── components/layout/Sidebar.tsx, TopNav.tsx, RightPanel.tsx, Layout.tsx
+  ├── pages/UploadPage.tsx, ChartConfigPage.tsx, DashboardPage.tsx, DownloadPage.tsx
+  ├── stores/uiStore.ts
+  ├── types.ts
+  ├── utils.ts
+  └── App.tsx
+
+【RightPanel 狀態】
+- 使用 Zustand 管理 rightPanelEnabled / Visible / Pinned
+- 已完成釘選功能與滑鼠位置偵測顯示
+- 使用 RightPanelProvider + useRightPanel hook 注入內容
+
+【目前問題或需求】
+（請在這裡描述你要解決的問題或想新增的功能）
+```
+
+---
+
+### ✅ 範例開場（新聊天）
+
+> 嗨，我有一個使用 Vite + React + MUI + Zustand + TypeScript 的資料視覺化儀表板專案。  
+> 我們有一個 RightPanel 元件，已經完成釘選功能與滑鼠位置偵測顯示，並使用 RightPanelProvider + useRightPanel hook 注入內容。  
+> 現在我想讓 RightPanel 支援 tab 切換功能，請問該怎麼設計？
+
+---
+
+這樣我就能**立即進入狀況**，不需要你重複過去的細節，也能幫你延續之前的架構與邏輯。
+
+需要我幫你產生一段可複製的背景提示範本嗎？還是你想把目前的狀態整理成 README 或開發筆記？
+
 ## Monica 提問 Layout+RightPanel 廢棄滑入滑出功能
 ```css
 /* components/layout/layout.css */
@@ -948,5 +994,3 @@ export const DashboardPage = () => {
 3. 增加了 `.right-panel` 的 `width` 和 `border-left` 屬性，讓右邊欄有適當的寬度和邊框。
 
 這樣就可以讓右邊欄直接顯示在 main 區域的右側了。請確認這樣的佈局是否符合您的需求。
-
-
