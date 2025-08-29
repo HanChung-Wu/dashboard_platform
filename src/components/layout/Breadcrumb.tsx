@@ -3,14 +3,33 @@ import React, { useState } from "react";
 import { Box, Typography, IconButton, Menu, MenuItem } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useLayoutStore } from "../../stores/layoutStore";
+import type { BreadcrumbItem } from "../../types";
 
 export const Breadcrumb: React.FC = () => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const breadcrumb = useLayoutStore((state) => state.breadcrumb);
+  const breadcrumb: BreadcrumbItem[] = useLayoutStore(
+    (state) => state.breadcrumb
+  );
+
+  console.log("Breadcrumb items:", breadcrumb);
+
+  const getBreadcrumbPath = (index: number) => {
+    if (index < 0 || index >= breadcrumb.length) {
+      return "/";
+    }
+
+    return (
+      "/" +
+      breadcrumb
+        .slice(0, index + 1)
+        .map((item) => item.path.replace(/^\//, ""))
+        .join("/")
+    );
+  };
 
   const handleBreadcrumbClick = (index: number) => {
-    const path = "/" + breadcrumb.slice(0, index + 1).join("/");
+    const path = getBreadcrumbPath(index);
     navigate(path);
   };
 
@@ -34,7 +53,7 @@ export const Breadcrumb: React.FC = () => {
             open={Boolean(anchorEl)}
             onClose={handleMoreClose}
           >
-            {breadcrumb.slice(0, breadcrumb.length - 2).map((seg, i) => (
+            {breadcrumb.slice(0, breadcrumb.length - 2).map(({ label }, i) => (
               <MenuItem
                 key={i}
                 onClick={() => {
@@ -42,7 +61,7 @@ export const Breadcrumb: React.FC = () => {
                   handleMoreClose();
                 }}
               >
-                {seg}
+                {label}
               </MenuItem>
             ))}
           </Menu>
@@ -51,7 +70,7 @@ export const Breadcrumb: React.FC = () => {
             sx={{ cursor: "pointer" }}
             onClick={() => handleBreadcrumbClick(breadcrumb.length - 2)}
           >
-            {breadcrumb[breadcrumb.length - 2]}
+            {breadcrumb[breadcrumb.length - 2].label}
           </Typography>
           <Typography>{">"}</Typography>
           <Typography
@@ -62,11 +81,11 @@ export const Breadcrumb: React.FC = () => {
             }}
             onClick={() => handleBreadcrumbClick(breadcrumb.length - 1)}
           >
-            {breadcrumb[breadcrumb.length - 1]}
+            {breadcrumb[breadcrumb.length - 1].label}
           </Typography>
         </>
       ) : (
-        breadcrumb.map((seg, i) => (
+        breadcrumb.map(({ label }, i) => (
           <React.Fragment key={i}>
             {i > 0 && <Typography>{">"}</Typography>}
             <Typography
@@ -77,7 +96,7 @@ export const Breadcrumb: React.FC = () => {
               }}
               onClick={() => handleBreadcrumbClick(i)}
             >
-              {seg}
+              {label}
             </Typography>
           </React.Fragment>
         ))
