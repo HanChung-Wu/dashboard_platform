@@ -517,7 +517,7 @@ setBreadcrumb(breadcrumb); // 更新到 Zustand store
 我覺得 tocMap 自動產生 breadcrumb 的功能還是放到以後，頁面與功能規劃完全，網站架構確定之後再來探討。
 
 【目前問題或需求】
-根據給定的 tocItems 生成目錄列表，目錄列表的輸入有 tocItems: TocItem[] ,   isExtendable?: boolean 控制此目錄可否展開顯示子目錄 ,   extendedLevel?: number 控制子目錄顯示層級
+根據給定的 tocItems 生成目錄列表，目錄列表的輸入有 tocItems: TocItem[] ,   isExpandable?: boolean 控制此目錄可否展開顯示子目錄 ,   expandedLevel?: number 控制子目錄顯示層級
 
 舉例而言，
 ```ts
@@ -550,7 +550,7 @@ const tocItems: TocItem[] = [
 ]
 ```
 
-如果 isExtendable 是 false 或者 extendedLevel 小於等於 0 ，那麼只顯示
+如果 isExpandable 是 false 或者 expandedLevel 小於等於 0 ，那麼只顯示
 ```
 上傳資料
 圖表設定
@@ -558,7 +558,7 @@ const tocItems: TocItem[] = [
 下載報表
 ```
 
-如果 isExtendable 是 true 且 extendedLevel 等於 1 ，那麼顯示
+如果 isExpandable 是 true 且 expandedLevel 等於 1 ，那麼顯示
 ```
 上傳資料
 圖表設定
@@ -570,7 +570,7 @@ const tocItems: TocItem[] = [
 下載報表
 ```
 
-如果 isExtendable 是 true 且 extendedLevel 等於 2 ，那麼顯示
+如果 isExpandable 是 true 且 expandedLevel 等於 2 ，那麼顯示
 ```
 上傳資料
 圖表設定
@@ -592,13 +592,13 @@ import type { TocItem } from "../../types";
 
 interface props {
   tocItems: TocItem[];
-  isExtendable?: boolean;
-  extendedLevel?: number;
+  isExpandable?: boolean;
+  expandedLevel?: number;
 }
 export const TocList: React.FC<props> = ({
   tocItems,
-  isExtendable = true,
-  extendedLevel = 1,
+  isExpandable = true,
+  expandedLevel = 1,
 }: props) => {
   console.log("tocItems", tocItems);
 
@@ -655,7 +655,7 @@ export const TocList: React.FC<props> = ({
 ```
 
 ## Copilot 回答 生成目錄列表
-你目前的需求是根據 `tocItems` 結構，依照 `isExtendable` 與 `extendedLevel` 控制目錄展開層級。以下是改寫後的 `TocList` 元件，支援巢狀結構與層級控制：
+你目前的需求是根據 `tocItems` 結構，依照 `isExpandable` 與 `expandedLevel` 控制目錄展開層級。以下是改寫後的 `TocList` 元件，支援巢狀結構與層級控制：
 
 ---
 
@@ -673,14 +673,14 @@ import type { TocItem } from "../../types";
 
 interface Props {
   tocItems: TocItem[];
-  isExtendable?: boolean;
-  extendedLevel?: number;
+  isExpandable?: boolean;
+  expandedLevel?: number;
 }
 
 export const TocList: React.FC<Props> = ({
   tocItems,
-  isExtendable = true,
-  extendedLevel = 1,
+  isExpandable = true,
+  expandedLevel = 1,
 }) => {
   const renderItems = (
     items: TocItem[],
@@ -691,9 +691,9 @@ export const TocList: React.FC<Props> = ({
         <ListItemButton component={Link} to={item.path}>
           <ListItemText primary={item.label} />
         </ListItemButton>
-        {isExtendable &&
+        {isExpandable &&
           item.children &&
-          extendedLevel > level &&
+          expandedLevel > level &&
           renderItems(item.children, level + 1)}
       </Box>
     ));
@@ -709,11 +709,11 @@ export const TocList: React.FC<Props> = ({
 
 - `renderItems` 是遞迴函式，根據 `level` 控制縮排與展開層級。
 - 使用 `Box` 包裹每個項目，並透過 `sx={{ pl: level * 2 }}` 控制左側縮排。
-- 判斷是否展開子目錄：`isExtendable && item.children && extendedLevel > level`
+- 判斷是否展開子目錄：`isExpandable && item.children && expandedLevel > level`
 
 ---
 
-### ✅ 顯示效果（以 `extendedLevel = 2` 為例）
+### ✅ 顯示效果（以 `expandedLevel = 2` 為例）
 
 ```plaintext
 上傳資料
@@ -737,9 +737,139 @@ export const TocList: React.FC<Props> = ({
 - 目錄項目加上圖示範例
 - 如何自訂每層的縮排距離
 
+## Copilot 提問 推薦三問 加上展開/收合動畫怎麼做 目錄項目加上圖示範例 如何自訂每層的縮排距離
+- 加上展開/收合動畫怎麼做
+- 目錄項目加上圖示範例
+- 如何自訂每層的縮排距離
 
-## Copilot 提問 
-## Copilot 回答 
+## Copilot 回答 推薦三問 加上展開/收合動畫怎麼做 目錄項目加上圖示範例 如何自訂每層的縮排距離
+太棒了！這三個問題都非常實用，以下我分別說明並提供範例：
+
+---
+
+### ✅ 1. 加上展開／收合動畫（使用 MUI 的 `Collapse`）
+
+你可以使用 `Collapse` 元件來控制子目錄的展開與收合，並搭配 `useState` 控制每個項目的展開狀態：
+
+```tsx
+import { useState } from "react";
+import {
+  List,
+  ListItemButton,
+  ListItemText,
+  Collapse,
+  Box,
+} from "@mui/material";
+import { ExpandLess, ExpandMore } from "@mui/icons-material";
+import { Link } from "react-router-dom";
+import type { TocItem } from "../../types";
+
+interface Props {
+  tocItems: TocItem[];
+  isExpandable?: boolean;
+  expandedLevel?: number;
+  indentPerLevel?: number;
+}
+
+export const TocList: React.FC<Props> = ({
+  tocItems,
+  isExpandable = true,
+  expandedLevel = 1,
+  indentPerLevel = 2,
+}) => {
+  const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
+
+  const toggleOpen = (path: string) => {
+    setOpenMap((prev) => ({ ...prev, [path]: !prev[path] }));
+  };
+
+  const renderItems = (items: TocItem[], level: number): React.ReactNode => {
+    return items.map((item) => {
+      const hasChildren = item.children && item.children.length > 0;
+      const isOpen = openMap[item.path] ?? false;
+
+      return (
+        <Box key={item.path} sx={{ pl: level * indentPerLevel }}>
+          <ListItemButton
+            component={hasChildren ? "div" : Link}
+            to={hasChildren ? undefined : item.path}
+            onClick={hasChildren ? () => toggleOpen(item.path) : undefined}
+          >
+            <ListItemText primary={item.label} />
+            {hasChildren &&
+              (isOpen ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />)}
+          </ListItemButton>
+
+          {hasChildren && isExpandable && expandedLevel > level && (
+            <Collapse in={isOpen} timeout="auto" unmountOnExit>
+              {renderItems(item.children!, level + 1)}
+            </Collapse>
+          )}
+        </Box>
+      );
+    });
+  };
+
+  return <List>{renderItems(tocItems, 0)}</List>;
+};
+```
+
+---
+
+### ✅ 2. 目錄項目加上圖示範例
+
+你可以在 `TocItem` 中加入 `icon?: React.ReactNode` 欄位，並在 `ListItemButton` 中顯示：
+
+```ts
+// types.ts
+export interface TocItem {
+  label: string;
+  path: string;
+  icon?: React.ReactNode;
+  children?: TocItem[];
+}
+```
+
+```tsx
+<ListItemButton>
+  {item.icon && <Box sx={{ mr: 1 }}>{item.icon}</Box>}
+  <ListItemText primary={item.label} />
+</ListItemButton>
+```
+
+使用範例：
+
+```ts
+import { UploadFile, BarChart, Dashboard } from "@mui/icons-material";
+
+const tocItems: TocItem[] = [
+  { label: "上傳資料", path: "/upload", icon: <UploadFile /> },
+  { label: "圖表設定", path: "/chart-config", icon: <BarChart /> },
+  { label: "儀表板", path: "/dashboard", icon: <Dashboard /> },
+];
+```
+
+---
+
+### ✅ 3. 自訂每層的縮排距離
+
+已在上方範例中加入 `indentPerLevel` 參數，預設為 `2`（即 `theme.spacing(2)`），你可以依需求調整：
+
+```tsx
+<TocList tocItems={tocItems} indentPerLevel={3} />
+```
+
+這樣每層的縮排距離會是 `theme.spacing(3)`，也就是 `24px`。
+
+---
+
+如果你希望我幫你整合進 Sidebar 或 Layout 結構，也可以告訴我目前 Sidebar 的實作方式，我可以幫你接上去！
+
+### 推薦三問
+- Sidebar 要怎麼整合 TocList 元件
+- Sidebar 加上收合動畫範例
+- 目錄項目圖示怎麼動態設定
+
 ## Copilot 提問 
 ## Copilot 回答 
 ## Copilot 提問 
