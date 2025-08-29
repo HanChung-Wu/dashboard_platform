@@ -12,7 +12,7 @@ export const DashboardPage: React.FC = () => {
   return (
     <PageWrapper
       tocItems={tocItems}
-      breadcrumb={["儀表板"]}
+      breadcrumb={[{ label: "儀表板", path: "/dashboard" }]}
       content={
         <div>
           主內容區塊
