@@ -1,10 +1,11 @@
 // src/components/layout/Sidebar.tsx
 import React from "react";
 import { Link } from "react-router-dom";
-import { Box, List, ListItemButton, ListItemText } from "@mui/material";
+import { Box } from "@mui/material";
 import Logo from "../common/Logo";
 import type { TocItem } from "../../types";
 import { useLayoutStore } from "../../stores/layoutStore";
+import { TocList } from "./TocList";
 
 export const Sidebar: React.FC = () => {
   const tocItems: TocItem[] = useLayoutStore((state) => state.tocItems);
@@ -37,13 +38,7 @@ export const Sidebar: React.FC = () => {
       </Box>
 
       {/* TOC 區塊 */}
-      <List>
-        {tocItems.map((item) => (
-          <ListItemButton key={item.path} component={Link} to={item.path}>
-            <ListItemText primary={item.label} />
-          </ListItemButton>
-        ))}
-      </List>
+      <TocList tocItems={tocItems} />
     </Box>
   );
 };
