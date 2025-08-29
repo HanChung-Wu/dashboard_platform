@@ -408,6 +408,117 @@ breadcrumb: [
 - 怎麼調整 layoutStore 的 breadcrumb 型別
 - 有沒有自動從 tocMap 產生 breadcrumb 的範例
 
+## Copilot 提問 tocMap自動產生breadcrumb
+有沒有自動從 tocMap 產生 breadcrumb 的範例
+
+## Copilot 回答 tocMap自動產生breadcrumb
+當然可以！以下是一個從 `tocMap.ts` 自動產生 breadcrumb 的範例邏輯，假設你已經有一個類似這樣的 `tocMap` 結構：
+
+---
+
+### ✅ 假設的 `tocMap.ts`
+
+```ts
+// src/routes/tocMap.ts
+import { TocItem } from "../types";
+
+export const tocMap: TocItem[] = [
+  {
+    label: "首頁",
+    path: "/",
+    children: [
+      {
+        label: "上傳頁面",
+        path: "/upload",
+      },
+      {
+        label: "儀表板",
+        path: "/dashboard",
+        children: [
+          {
+            label: "圖表設定",
+            path: "/dashboard/chart-config",
+          },
+        ],
+      },
+    ],
+  },
+];
+```
+
+---
+
+### ✅ 自動產生 breadcrumb 的函式
+
+```ts
+// src/utils.ts
+import { TocItem } from "./types";
+
+interface BreadcrumbItem {
+  label: string;
+  path: string;
+}
+
+export function findBreadcrumbFromPath(
+  tocItems: TocItem[],
+  currentPath: string
+): BreadcrumbItem[] {
+  const result: BreadcrumbItem[] = [];
+
+  function traverse(items: TocItem[], pathStack: BreadcrumbItem[]): boolean {
+    for (const item of items) {
+      const newStack = [...pathStack, { label: item.label, path: item.path }];
+      if (item.path === currentPath) {
+        result.push(...newStack);
+        return true;
+      }
+      if (item.children && traverse(item.children, newStack)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  traverse(tocItems, []);
+  return result;
+}
+```
+
+---
+
+### ✅ 使用方式（例如在 `LayoutProvider` 中）
+
+```ts
+import { tocMap } from "../routes/tocMap";
+import { findBreadcrumbFromPath } from "../utils";
+
+const currentPath = location.pathname;
+const breadcrumb = findBreadcrumbFromPath(tocMap, currentPath);
+setBreadcrumb(breadcrumb); // 更新到 Zustand store
+```
+
+---
+
+### ✅ 額外建議
+
+- 若路徑中有動態參數（如 `/dashboard/:id`），可加入比對邏輯，例如使用 `matchPath`。
+- 可在 `useEffect` 中監聽 `location.pathname` 變化，自動更新 breadcrumb。
+
+---
+
+需要我幫你整合到 `LayoutProvider.tsx` 或 Zustand store 嗎？
+
+### 推薦三問
+- 幫我整合到 LayoutProvider.tsx
+- 怎麼處理動態路由參數的 breadcrumb
+- 有沒有 useEffect 自動更新 breadcrumb 的範例
+
+## Copilot 提問
+## Copilot 回答
+## Copilot 提問 
+## Copilot 回答 
+## Copilot 提問 
+## Copilot 回答 
 ## Copilot 提問 
 ## Copilot 回答 
 ## Copilot 提問 
