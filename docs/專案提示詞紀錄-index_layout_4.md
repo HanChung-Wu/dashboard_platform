@@ -870,8 +870,249 @@ const tocItems: TocItem[] = [
 - Sidebar 加上收合動畫範例
 - 目錄項目圖示怎麼動態設定
 
-## Copilot 提問 
-## Copilot 回答 
+## Gemini 提問 TocList 重構
+```tsx
+// src/components/layout/TocList.tsx
+import { useState } from "react";
+import {
+  List,
+  ListItemButton,
+  ListItemText,
+  Collapse,
+  Box,
+} from "@mui/material";
+import { ExpandLess, ExpandMore } from "@mui/icons-material";
+import { Link } from "react-router-dom";
+import type { TocItem } from "../../types";
+
+interface Props {
+  tocItems: TocItem[];
+  isExpandable?: boolean;
+  expandedLevel?: number;
+  indentPerLevel?: number;
+}
+
+export const TocList: React.FC<Props> = ({
+  tocItems,
+  isExpandable = true,
+  expandedLevel = 3,
+  indentPerLevel = 2,
+}) => {
+  const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
+
+  const toggleOpen = (path: string) => {
+    setOpenMap((prev) => ({ ...prev, [path]: !prev[path] }));
+  };
+
+  const renderItems = (items: TocItem[], level: number): React.ReactNode => {
+    return items.map((item) => {
+      const hasChildren = item.children && item.children.length > 0;
+      const isExpandedItem =
+        hasChildren && isExpandable && expandedLevel > level;
+      const isOpen = openMap[item.path] ?? false;
+
+      // 根據是否有子項目和是否需要展開來決定元件和屬性
+      const Component = isExpandedItem ? "div" : Link;
+      const componentProps = isExpandedItem
+        ? { onClick: () => toggleOpen(item.path) }
+        : { to: item.path };
+
+      return (
+        <Box key={item.path} sx={{ pl: level * indentPerLevel }}>
+          <ListItemButton component={Component} {...componentProps}>
+            {item.icon && <Box sx={{ mr: 1 }}>{item.icon}</Box>}
+            <ListItemText primary={item.label} />
+            {isExpandedItem &&
+              (isOpen ? (
+                <ExpandLess fontSize="small" />
+              ) : (
+                <ExpandMore fontSize="small" />
+              ))}
+          </ListItemButton>
+
+          {isExpandedItem && (
+            <Collapse in={isOpen} timeout="auto" unmountOnExit>
+              {renderItems(item.children!, level + 1)}
+            </Collapse>
+          )}
+        </Box>
+      );
+    });
+  };
+
+  return <List>{renderItems(tocItems, 0)}</List>;
+};
+```
+
+我正在 refactor 有什麼建議
+
+## Gemini 回答 TocList 重構
+
+好的，針對這段程式碼的重構，我有一些建議可以讓它更符合 React 的最佳實踐，同時提升效能和可讀性。
+
+### 1. 將遞迴邏輯封裝成獨立元件 📦
+目前 `renderItems` 函式直接在 `TocList` 內部遞迴呼叫，這會導致每次 `TocList` 重新渲染時，整個清單都重新計算和生成。更優雅且高效的作法是將單個清單項目的渲染邏輯封裝成一個獨立的元件，例如 `TocListItem`。這樣一來，只有當單個項目的狀態（例如開關）改變時，對應的元件才會重新渲染，而不會影響到整個清單。
+
+優點：
+- **效能優化** 🚀：減少不必要的重新渲染。
+- **程式碼更清晰** 📖：每個元件只負責自己的事，遵循單一職責原則。
+- **可讀性提升** 📈：主元件的邏輯變得更簡單，更容易理解。
+
+範例：
+
+```tsx
+// src/components/layout/TocListItem.tsx
+import React, { useState } from "react";
+import {
+  List,
+  ListItemButton,
+  ListItemText,
+  Collapse,
+  Box,
+} from "@mui/material";
+import { ExpandLess, ExpandMore } from "@mui/icons-material";
+import { Link } from "react-router-dom";
+import type { TocItem } from "../../types";
+
+interface Props {
+  item: TocItem;
+  level: number;
+  isExpandable: boolean;
+  expandedLevel: number;
+  indentPerLevel: number;
+}
+
+export const TocListItem: React.FC<Props> = ({
+  item,
+  level,
+  isExpandable,
+  expandedLevel,
+  indentPerLevel,
+}) => {
+  const [open, setOpen] = useState(false);
+  const hasChildren = item.children && item.children.length > 0;
+  const isExpandableItem = hasChildren && isExpandable && expandedLevel > level;
+
+  const handleClick = () => {
+    if (isExpandableItem) {
+      setOpen(!open);
+    }
+  };
+
+  const Component = isExpandableItem ? 'div' : Link;
+  const componentProps = isExpandableItem ? { onClick: handleClick } : { to: item.path };
+
+  return (
+    <Box sx={{ pl: level * indentPerLevel }}>
+      <ListItemButton component={Component} {...componentProps}>
+        {item.icon && <Box sx={{ mr: 1 }}>{item.icon}</Box>}
+        <ListItemText primary={item.label} />
+        {isExpandableItem &&
+          (open ? (
+            <ExpandLess fontSize="small" />
+          ) : (
+            <ExpandMore fontSize="small" />
+          ))}
+      </ListItemButton>
+
+      {isExpandableItem && (
+        <Collapse in={open} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            {item.children!.map((childItem) => (
+              <TocListItem
+                key={childItem.path}
+                item={childItem}
+                level={level + 1}
+                isExpandable={isExpandable}
+                expandedLevel={expandedLevel}
+                indentPerLevel={indentPerLevel}
+              />
+            ))}
+          </List>
+        </Collapse>
+      )}
+    </Box>
+  );
+};
+```
+
+在 `TocList` 中，您只需簡單地調用這個新元件即可：
+
+```tsx
+// src/components/layout/TocList.tsx
+import { List } from "@mui/material";
+import type { TocItem } from "../../types";
+import { TocListItem } from "./TocListItem"; // 從這裡導入新元件
+
+interface Props {
+  tocItems: TocItem[];
+  isExpandable?: boolean;
+  expandedLevel?: number;
+  indentPerLevel?: number;
+}
+
+export const TocList: React.FC<Props> = ({
+  tocItems,
+  isExpandable = true,
+  expandedLevel = 3,
+  indentPerLevel = 2,
+}) => {
+  return (
+    <List>
+      {tocItems.map((item) => (
+        <TocListItem
+          key={item.path}
+          item={item}
+          level={0}
+          isExpandable={isExpandable}
+          expandedLevel={expandedLevel}
+          indentPerLevel={indentPerLevel}
+        />
+      ))}
+    </List>
+  );
+};
+```
+
+### 2. 優化 useState 狀態管理 📊
+您目前使用一個 `openMap` 物件來管理所有項目的開關狀態。這在項目較少時沒有問題，但當清單很長時，每次點擊一個項目，`setOpenMap` 都會觸發整個 TocList 的重新渲染。
+
+將狀態封裝到 `TocListItem` 中可以完全解決這個問題。每個 `TocListItem` 都有自己的 `useState` 來管理自己的開關狀態，彼此獨立。這能顯著提升效能，特別是對於大型、巢狀的清單。
+
+### 3. 避免不必要的 Props 傳遞 🔄
+在原始程式碼中，`isExpandable`、`expandedLevel` 和 `indentPerLevel` 被遞迴傳遞。如果這些值在元件樹中是靜態的，您可以考慮使用 `React` 的 `Context` 來提供它們，而不是透過 `props` 層層傳遞（props drilling）。
+
+優點：
+- **減少 Props Drilling** 💧：讓元件的介面更乾淨。
+- **易於維護** 🛠️：如果將來需要修改這些值，只需在 `Context Provider` 中修改一次即可。
+
+### 4. 使用 React.memo 進行效能優化 💨
+如果您決定維持原有的遞迴函式結構，您可以使用 `React.memo` 來包裹 `TocList` 元件。
+
+優點：
+- **跳過不必要的渲染** ⏭️：當 `props` (例如 `tocItems`) 沒有改變時，`React.memo` 會阻止 `TocList` 的重新渲染。這在父元件頻繁更新但 `tocItems` 不變的情況下特別有用。
+
+```tsx
+// src/components/layout/TocList.tsx
+import React, { useState, memo } from "react";
+// ... (其他 imports)
+
+const TocListBase: React.FC<Props> = ({
+  tocItems,
+  isExpandable = true,
+  expandedLevel = 3,
+  indentPerLevel = 2,
+}) => {
+  // ... (您的邏輯)
+};
+
+export const TocList = memo(TocListBase);
+```
+
+總結：
+
+最推薦的重構方案是 將遞迴邏輯封裝成獨立的 `TocListItem` 元件，這能根本上解決效能和可讀性的問題，並讓每個元件都只專注於一個單一職責。這也是大型 `React` 應用中處理遞迴或巢狀清單的標準模式。
+
 ## Copilot 提問 
 ## Copilot 回答 
 ## Copilot 提問 
