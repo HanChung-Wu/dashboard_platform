@@ -1,12 +1,14 @@
 // src/routes/tocMap.ts
+import { BarChart, Dashboard, Download, UploadFile } from "@mui/icons-material";
 import type { TocItem } from "../types";
 
 export const tocMap: Record<string, TocItem[]> = {
   "/": [
-    { label: "上傳資料", path: "/upload" },
+    { label: "上傳資料", path: "/upload", icon: <UploadFile /> },
     {
       label: "圖表設定",
       path: "/chart-config",
+      icon: <BarChart />,
       children: [
         { label: "測試1", path: "/chart-config/ttt" },
         { label: "測試2", path: "/chart-config/ttt2" },
@@ -15,6 +17,7 @@ export const tocMap: Record<string, TocItem[]> = {
     {
       label: "儀表板",
       path: "/dashboard",
+      icon: <Dashboard />,
       children: [
         {
           label: "測試1",
@@ -41,19 +44,19 @@ export const tocMap: Record<string, TocItem[]> = {
         { label: "測試2", path: "/dashboard/ttt2" },
       ],
     },
-    { label: "下載報表", path: "/download" },
+    { label: "下載報表", path: "/download", icon: <Download /> },
   ],
   "/upload": [
-    { label: "上傳資料", path: "/upload" },
-    { label: "圖表設定", path: "/chart-config" },
+    { label: "上傳資料", path: "/upload", icon: <UploadFile /> },
+    { label: "圖表設定", path: "/chart-config", icon: <BarChart /> },
   ],
   "/chart-config": [
-    { label: "圖表設定", path: "/chart-config" },
-    { label: "儀表板", path: "/dashboard" },
+    { label: "圖表設定", path: "/chart-config", icon: <BarChart /> },
+    { label: "儀表板", path: "/dashboard", icon: <Dashboard /> },
   ],
   "/dashboard": [
-    { label: "儀表板", path: "/dashboard" },
-    { label: "下載報表", path: "/download" },
+    { label: "儀表板", path: "/dashboard", icon: <Dashboard /> },
+    { label: "下載報表", path: "/download", icon: <Download /> },
   ],
-  "/download": [{ label: "下載報表", path: "/download" }],
+  "/download": [{ label: "下載報表", path: "/download", icon: <Download /> }],
 };

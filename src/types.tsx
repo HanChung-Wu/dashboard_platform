@@ -2,6 +2,7 @@
 export interface TocItem {
   label: string;
   path: string;
+  icon?: React.ReactNode;
   children?: TocItem[];
 }
 

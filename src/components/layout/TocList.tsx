@@ -44,6 +44,7 @@ export const TocList: React.FC<Props> = ({
             to={isExpandedItem ? undefined : item.path}
             onClick={isExpandedItem ? () => toggleOpen(item.path) : undefined}
           >
+            {item.icon && <Box sx={{ mr: 1 }}>{item.icon}</Box>}
             <ListItemText primary={item.label} />
             {isExpandedItem &&
               (isOpen ? (
