@@ -1,13 +1,13 @@
 // src/stores/layoutStore.ts
 import { create } from "zustand";
-import type { TocItem } from "../types";
+import type { BreadcrumbItem, TocItem } from "../types";
 
 export interface LayoutState {
   tocItems: TocItem[];
   setTocItems: (items: TocItem[]) => void;
 
-  breadcrumb: string[];
-  setBreadcrumb: (items: string[]) => void;
+  breadcrumb: BreadcrumbItem[];
+  setBreadcrumb: (items: BreadcrumbItem[]) => void;
 
   rightPanelContent: React.ReactNode | null;
   setRightPanelContent: (content: React.ReactNode | null) => void;
