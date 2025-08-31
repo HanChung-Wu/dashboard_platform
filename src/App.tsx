@@ -7,6 +7,7 @@ import { UploadPage } from "./pages/UploadPage";
 import { ChartConfigPage } from "./pages/ChartConfigPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { DownloadPage } from "./pages/DownloadPage";
+import { TestingPage } from "./pages/TestingPage";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
             <Route path="chart-config" element={<ChartConfigPage />} />
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="download" element={<DownloadPage />} />
+            <Route path="testing" element={<TestingPage />} />
           </Route>
         </Routes>
       </LayoutProvider>

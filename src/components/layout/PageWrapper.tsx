@@ -5,13 +5,13 @@ import type { PageConfig } from "../../types";
 
 export const PageWrapper: React.FC<PageConfig> = ({
   tocItems,
-  breadcrumb,
-  rightPanel,
+  breadcrumbItems: breadcrumb,
+  rightPanelContent: rightPanel,
   content,
 }) => {
   const {
     setTocItems,
-    setBreadcrumb,
+    setBreadcrumbItems: setBreadcrumb,
     setRightPanelContent,
     setRightPanelEnabled,
   } = useLayoutContext();

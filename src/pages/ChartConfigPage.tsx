@@ -10,7 +10,7 @@ export const ChartConfigPage: React.FC = () => {
   return (
     <PageWrapper
       tocItems={tocItems}
-      breadcrumb={[{ label: "圖表設定", path: "/chart-config" }]}
+      breadcrumbItems={[{ label: "圖表設定", path: "/chart-config" }]}
       content={<div>ChartConfigPage</div>}
     />
   );
