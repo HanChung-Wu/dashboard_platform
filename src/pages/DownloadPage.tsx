@@ -10,7 +10,7 @@ export const DownloadPage: React.FC = () => {
   return (
     <PageWrapper
       tocItems={tocItems}
-      breadcrumb={[{ label: "下載報表", path: "/download" }]}
+      breadcrumbItems={[{ label: "下載報表", path: "/download" }]}
       content={<div>DownloadPage</div>}
     />
   );

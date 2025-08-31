@@ -9,7 +9,7 @@ export const HomePage: React.FC = () => {
   return (
     <PageWrapper
       tocItems={tocItems}
-      breadcrumb={[{ label: "首頁", path: "/" }]}
+      breadcrumbItems={[{ label: "首頁", path: "/" }]}
       content={<div>歡迎使用資料視覺化儀表板</div>}
     />
   );

@@ -870,8 +870,1254 @@ const tocItems: TocItem[] = [
 - Sidebar 加上收合動畫範例
 - 目錄項目圖示怎麼動態設定
 
-## Copilot 提問 
-## Copilot 回答 
+## Gemini 提問 TocList 重構
+```tsx
+// src/components/layout/TocList.tsx
+import { useState } from "react";
+import {
+  List,
+  ListItemButton,
+  ListItemText,
+  Collapse,
+  Box,
+} from "@mui/material";
+import { ExpandLess, ExpandMore } from "@mui/icons-material";
+import { Link } from "react-router-dom";
+import type { TocItem } from "../../types";
+
+interface Props {
+  tocItems: TocItem[];
+  isExpandable?: boolean;
+  expandedLevel?: number;
+  indentPerLevel?: number;
+}
+
+export const TocList: React.FC<Props> = ({
+  tocItems,
+  isExpandable = true,
+  expandedLevel = 3,
+  indentPerLevel = 2,
+}) => {
+  const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
+
+  const toggleOpen = (path: string) => {
+    setOpenMap((prev) => ({ ...prev, [path]: !prev[path] }));
+  };
+
+  const renderItems = (items: TocItem[], level: number): React.ReactNode => {
+    return items.map((item) => {
+      const hasChildren = item.children && item.children.length > 0;
+      const isExpandedItem =
+        hasChildren && isExpandable && expandedLevel > level;
+      const isOpen = openMap[item.path] ?? false;
+
+      // 根據是否有子項目和是否需要展開來決定元件和屬性
+      const Component = isExpandedItem ? "div" : Link;
+      const componentProps = isExpandedItem
+        ? { onClick: () => toggleOpen(item.path) }
+        : { to: item.path };
+
+      return (
+        <Box key={item.path} sx={{ pl: level * indentPerLevel }}>
+          <ListItemButton component={Component} {...componentProps}>
+            {item.icon && <Box sx={{ mr: 1 }}>{item.icon}</Box>}
+            <ListItemText primary={item.label} />
+            {isExpandedItem &&
+              (isOpen ? (
+                <ExpandLess fontSize="small" />
+              ) : (
+                <ExpandMore fontSize="small" />
+              ))}
+          </ListItemButton>
+
+          {isExpandedItem && (
+            <Collapse in={isOpen} timeout="auto" unmountOnExit>
+              {renderItems(item.children!, level + 1)}
+            </Collapse>
+          )}
+        </Box>
+      );
+    });
+  };
+
+  return <List>{renderItems(tocItems, 0)}</List>;
+};
+```
+
+我正在 refactor 有什麼建議
+
+## Gemini 回答 TocList 重構
+
+好的，針對這段程式碼的重構，我有一些建議可以讓它更符合 React 的最佳實踐，同時提升效能和可讀性。
+
+### 1. 將遞迴邏輯封裝成獨立元件 📦
+目前 `renderItems` 函式直接在 `TocList` 內部遞迴呼叫，這會導致每次 `TocList` 重新渲染時，整個清單都重新計算和生成。更優雅且高效的作法是將單個清單項目的渲染邏輯封裝成一個獨立的元件，例如 `TocListItem`。這樣一來，只有當單個項目的狀態（例如開關）改變時，對應的元件才會重新渲染，而不會影響到整個清單。
+
+優點：
+- **效能優化** 🚀：減少不必要的重新渲染。
+- **程式碼更清晰** 📖：每個元件只負責自己的事，遵循單一職責原則。
+- **可讀性提升** 📈：主元件的邏輯變得更簡單，更容易理解。
+
+範例：
+
+```tsx
+// src/components/layout/TocListItem.tsx
+import React, { useState } from "react";
+import {
+  List,
+  ListItemButton,
+  ListItemText,
+  Collapse,
+  Box,
+} from "@mui/material";
+import { ExpandLess, ExpandMore } from "@mui/icons-material";
+import { Link } from "react-router-dom";
+import type { TocItem } from "../../types";
+
+interface Props {
+  item: TocItem;
+  level: number;
+  isExpandable: boolean;
+  expandedLevel: number;
+  indentPerLevel: number;
+}
+
+export const TocListItem: React.FC<Props> = ({
+  item,
+  level,
+  isExpandable,
+  expandedLevel,
+  indentPerLevel,
+}) => {
+  const [open, setOpen] = useState(false);
+  const hasChildren = item.children && item.children.length > 0;
+  const isExpandableItem = hasChildren && isExpandable && expandedLevel > level;
+
+  const handleClick = () => {
+    if (isExpandableItem) {
+      setOpen(!open);
+    }
+  };
+
+  const Component = isExpandableItem ? 'div' : Link;
+  const componentProps = isExpandableItem ? { onClick: handleClick } : { to: item.path };
+
+  return (
+    <Box sx={{ pl: level * indentPerLevel }}>
+      <ListItemButton component={Component} {...componentProps}>
+        {item.icon && <Box sx={{ mr: 1 }}>{item.icon}</Box>}
+        <ListItemText primary={item.label} />
+        {isExpandableItem &&
+          (open ? (
+            <ExpandLess fontSize="small" />
+          ) : (
+            <ExpandMore fontSize="small" />
+          ))}
+      </ListItemButton>
+
+      {isExpandableItem && (
+        <Collapse in={open} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            {item.children!.map((childItem) => (
+              <TocListItem
+                key={childItem.path}
+                item={childItem}
+                level={level + 1}
+                isExpandable={isExpandable}
+                expandedLevel={expandedLevel}
+                indentPerLevel={indentPerLevel}
+              />
+            ))}
+          </List>
+        </Collapse>
+      )}
+    </Box>
+  );
+};
+```
+
+在 `TocList` 中，您只需簡單地調用這個新元件即可：
+
+```tsx
+// src/components/layout/TocList.tsx
+import { List } from "@mui/material";
+import type { TocItem } from "../../types";
+import { TocListItem } from "./TocListItem"; // 從這裡導入新元件
+
+interface Props {
+  tocItems: TocItem[];
+  isExpandable?: boolean;
+  expandedLevel?: number;
+  indentPerLevel?: number;
+}
+
+export const TocList: React.FC<Props> = ({
+  tocItems,
+  isExpandable = true,
+  expandedLevel = 3,
+  indentPerLevel = 2,
+}) => {
+  return (
+    <List>
+      {tocItems.map((item) => (
+        <TocListItem
+          key={item.path}
+          item={item}
+          level={0}
+          isExpandable={isExpandable}
+          expandedLevel={expandedLevel}
+          indentPerLevel={indentPerLevel}
+        />
+      ))}
+    </List>
+  );
+};
+```
+
+### 2. 優化 useState 狀態管理 📊
+您目前使用一個 `openMap` 物件來管理所有項目的開關狀態。這在項目較少時沒有問題，但當清單很長時，每次點擊一個項目，`setOpenMap` 都會觸發整個 TocList 的重新渲染。
+
+將狀態封裝到 `TocListItem` 中可以完全解決這個問題。每個 `TocListItem` 都有自己的 `useState` 來管理自己的開關狀態，彼此獨立。這能顯著提升效能，特別是對於大型、巢狀的清單。
+
+### 3. 避免不必要的 Props 傳遞 🔄
+在原始程式碼中，`isExpandable`、`expandedLevel` 和 `indentPerLevel` 被遞迴傳遞。如果這些值在元件樹中是靜態的，您可以考慮使用 `React` 的 `Context` 來提供它們，而不是透過 `props` 層層傳遞（props drilling）。
+
+優點：
+- **減少 Props Drilling** 💧：讓元件的介面更乾淨。
+- **易於維護** 🛠️：如果將來需要修改這些值，只需在 `Context Provider` 中修改一次即可。
+
+### 4. 使用 React.memo 進行效能優化 💨
+如果您決定維持原有的遞迴函式結構，您可以使用 `React.memo` 來包裹 `TocList` 元件。
+
+優點：
+- **跳過不必要的渲染** ⏭️：當 `props` (例如 `tocItems`) 沒有改變時，`React.memo` 會阻止 `TocList` 的重新渲染。這在父元件頻繁更新但 `tocItems` 不變的情況下特別有用。
+
+```tsx
+// src/components/layout/TocList.tsx
+import React, { useState, memo } from "react";
+// ... (其他 imports)
+
+const TocListBase: React.FC<Props> = ({
+  tocItems,
+  isExpandable = true,
+  expandedLevel = 3,
+  indentPerLevel = 2,
+}) => {
+  // ... (您的邏輯)
+};
+
+export const TocList = memo(TocListBase);
+```
+
+總結：
+
+最推薦的重構方案是 將遞迴邏輯封裝成獨立的 `TocListItem` 元件，這能根本上解決效能和可讀性的問題，並讓每個元件都只專注於一個單一職責。這也是大型 `React` 應用中處理遞迴或巢狀清單的標準模式。
+
+## Monica:GPT 4o 提問 
+根據 MUI Breadcrumbs 文檔 https://mui.com/material-ui/react-breadcrumbs/#condensed-with-menu 整理重構代碼
+
+```tsx
+// src/components/layout/Breadcrumb.tsx
+import React, { useState } from "react";
+import { Box, Typography, IconButton, Menu, MenuItem } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { useLayoutStore } from "../../stores/layoutStore";
+import type { BreadcrumbItem } from "../../types";
+
+export const Breadcrumb: React.FC = () => {
+  const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const breadcrumb: BreadcrumbItem[] = useLayoutStore(
+    (state) => state.breadcrumb
+  );
+
+  console.log("Breadcrumb items:", breadcrumb);
+
+  const getBreadcrumbPath = (index: number) => {
+    if (index < 0 || index >= breadcrumb.length) {
+      return "/";
+    }
+
+    return (
+      "/" +
+      breadcrumb
+        .slice(0, index + 1)
+        .map((item) => item.path.replace(/^\//, ""))
+        .join("/")
+    );
+  };
+
+  const handleBreadcrumbClick = (index: number) => {
+    const path = getBreadcrumbPath(index);
+    navigate(path);
+  };
+
+  const handleMoreClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMoreClose = () => {
+    setAnchorEl(null);
+  };
+
+  return (
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      {breadcrumb.length > 3 ? (
+        <>
+          <IconButton size="small" onClick={handleMoreClick}>
+            <Typography fontSize={12}>...</Typography>
+          </IconButton>
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleMoreClose}
+          >
+            {breadcrumb.slice(0, breadcrumb.length - 2).map(({ label }, i) => (
+              <MenuItem
+                key={i}
+                onClick={() => {
+                  handleBreadcrumbClick(i);
+                  handleMoreClose();
+                }}
+              >
+                {label}
+              </MenuItem>
+            ))}
+          </Menu>
+          <Typography>{">"}</Typography>
+          <Typography
+            sx={{ cursor: "pointer" }}
+            onClick={() => handleBreadcrumbClick(breadcrumb.length - 2)}
+          >
+            {breadcrumb[breadcrumb.length - 2].label}
+          </Typography>
+          <Typography>{">"}</Typography>
+          <Typography
+            sx={{
+              cursor: "pointer",
+              fontWeight: "bold",
+              color: "primary.main",
+            }}
+            onClick={() => handleBreadcrumbClick(breadcrumb.length - 1)}
+          >
+            {breadcrumb[breadcrumb.length - 1].label}
+          </Typography>
+        </>
+      ) : (
+        breadcrumb.map(({ label }, i) => (
+          <React.Fragment key={i}>
+            {i > 0 && <Typography>{">"}</Typography>}
+            <Typography
+              sx={{
+                cursor: "pointer",
+                fontWeight: i === breadcrumb.length - 1 ? "bold" : "normal",
+                color: i === breadcrumb.length - 1 ? "primary.main" : "inherit",
+              }}
+              onClick={() => handleBreadcrumbClick(i)}
+            >
+              {label}
+            </Typography>
+          </React.Fragment>
+        ))
+      )}
+    </Box>
+  );
+};
+```
+
+## Monica:GPT 4o 回答 
+
+根據 MUI Breadcrumbs 文檔的建議，我們可以使用 `Breadcrumbs` 和 `Menu` 元件來重構代碼，使其更加簡潔和符合 MUI 的最佳實踐。以下是重構後的代碼：
+
+```tsx
+import React, { useState } from "react";
+import { Breadcrumbs, Typography, IconButton, Menu, MenuItem, Box } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { useLayoutStore } from "../../stores/layoutStore";
+import type { BreadcrumbItem } from "../../types";
+
+export const Breadcrumb: React.FC = () => {
+  const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const breadcrumb: BreadcrumbItem[] = useLayoutStore((state) => state.breadcrumb);
+
+  const getBreadcrumbPath = (index: number) => {
+    return "/" + breadcrumb.slice(0, index + 1).map((item) => item.path.replace(/^\//, "")).join("/");
+  };
+
+  const handleBreadcrumbClick = (index: number) => {
+    navigate(getBreadcrumbPath(index));
+  };
+
+  const handleMoreClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMoreClose = () => {
+    setAnchorEl(null);
+  };
+
+  return (
+    <Breadcrumbs separator=">">
+      {breadcrumb.length > 3 ? (
+        <>
+          <IconButton size="small" onClick={handleMoreClick}>
+            <Typography fontSize={12}>...</Typography>
+          </IconButton>
+          <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMoreClose}>
+            {breadcrumb.slice(0, breadcrumb.length - 2).map(({ label }, i) => (
+              <MenuItem
+                key={i}
+                onClick={() => {
+                  handleBreadcrumbClick(i);
+                  handleMoreClose();
+                }}
+              >
+                {label}
+              </MenuItem>
+            ))}
+          </Menu>
+          <Typography
+            sx={{ cursor: "pointer" }}
+            onClick={() => handleBreadcrumbClick(breadcrumb.length - 2)}
+          >
+            {breadcrumb[breadcrumb.length - 2].label}
+          </Typography>
+          <Typography
+            sx={{
+              cursor: "pointer",
+              fontWeight: "bold",
+              color: "primary.main",
+            }}
+            onClick={() => handleBreadcrumbClick(breadcrumb.length - 1)}
+          >
+            {breadcrumb[breadcrumb.length - 1].label}
+          </Typography>
+        </>
+      ) : (
+        breadcrumb.map(({ label }, i) => (
+          <Typography
+            key={i}
+            sx={{
+              cursor: "pointer",
+              fontWeight: i === breadcrumb.length - 1 ? "bold" : "normal",
+              color: i === breadcrumb.length - 1 ? "primary.main" : "inherit",
+            }}
+            onClick={() => handleBreadcrumbClick(i)}
+          >
+            {label}
+          </Typography>
+        ))
+      )}
+    </Breadcrumbs>
+  );
+};
+```
+
+### 重構後的改進點：
+1. **使用 `Breadcrumbs` 元件**：
+   - MUI 的 `Breadcrumbs` 元件提供了內建的分隔符和結構，簡化了手動處理分隔符的代碼。
+
+2. **簡化分支邏輯**：
+   - 使用 `Breadcrumbs` 的子元素來處理普通情況和超過 3 個項目的情況，減少了代碼的複雜性。
+
+3. **更清晰的樣式處理**：
+   - 將樣式集中在 `Typography` 的 `sx` 屬性中，並根據條件動態設置樣式。
+
+4. **更易於擴展和維護**：
+   - 重構後的代碼更符合 React 的組件化思想，並且結構更加清晰，便於未來的擴展和修改。
+
+### 使用方式：
+將此代碼保存為 `src/components/layout/Breadcrumb.tsx`，並在需要的地方導入使用即可。
+
+## ChatGPT 提問 Breadcrumb重構
+以下三個版本哪一個更好，或者你給出更好的版本
+
+```tsx
+// src/components/layout/Breadcrumb.tsx
+import React, { useState } from "react";
+import { Breadcrumbs, IconButton, Menu, MenuItem, Link } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { useLayoutStore } from "../../stores/layoutStore";
+import type { BreadcrumbItem } from "../../types";
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+
+export const Breadcrumb: React.FC = () => {
+  const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const breadcrumbItems: BreadcrumbItem[] = useLayoutStore(
+    (state) => state.breadcrumbItems
+  );
+
+  // 計算麵包屑路徑
+  const getBreadcrumbPath = (index: number) => {
+    return (
+      "/" +
+      breadcrumbItems
+        .slice(0, index + 1)
+        .map((item) => item.path.replace(/^\//, ""))
+        .join("/")
+    );
+  };
+
+  // 處理麵包屑點擊
+  const handleBreadcrumbClick = (index: number) => {
+    navigate(getBreadcrumbPath(index));
+  };
+
+  // 處理更多按鈕點擊
+  const handleMoreClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  // 處理更多菜單關閉
+  const handleMoreClose = () => {
+    setAnchorEl(null);
+  };
+
+  // 創建麵包屑項目
+  const renderBreadcrumbItem = (
+    key: number | string,
+    label: string,
+    index: number,
+    isLast = false
+  ) => {
+    const path = getBreadcrumbPath(index);
+    const fontWeight = isLast ? "bold" : "normal";
+    const color = isLast ? "primary.main" : "inherit";
+
+    return (
+      <Link
+        key={key}
+        underline="hover"
+        href={path}
+        sx={{
+          fontWeight,
+          color,
+          textAlign: "left",
+          background: "none",
+          border: "none",
+          padding: 0,
+          cursor: "pointer",
+          fontSize: "inherit",
+          fontFamily: "inherit",
+        }}
+      >
+        {label}
+      </Link>
+    );
+  };
+
+  // 獲取要顯示的麵包屑項目
+  const getBreadCrumbs = () => {
+    if (breadcrumbItems.length <= 3) {
+      // 如果項目少於或等於3個，顯示所有項目
+      return breadcrumbItems.map((item, index) =>
+        renderBreadcrumbItem(
+          index,
+          item.label,
+          index,
+          index === breadcrumbItems.length - 1
+        )
+      );
+    } else {
+      // 如果項目多於3個，顯示省略號和最後兩個項目
+      const lastTwoItems = [
+        // 倒數第二個項目
+        renderBreadcrumbItem(
+          "second-last",
+          breadcrumbItems[breadcrumbItems.length - 2].label,
+          breadcrumbItems.length - 2
+        ),
+        // 最後一個項目
+        renderBreadcrumbItem(
+          "last",
+          breadcrumbItems[breadcrumbItems.length - 1].label,
+          breadcrumbItems.length - 1,
+          true
+        ),
+      ];
+
+      // 添加省略號按鈕
+      return [
+        <IconButton
+          key="more"
+          size="small"
+          onClick={handleMoreClick}
+          aria-label="more breadcrumbs"
+          aria-haspopup="true"
+        >
+          <span style={{ fontSize: 12 }}>...</span>
+        </IconButton>,
+        ...lastTwoItems,
+      ];
+    }
+  };
+
+  return (
+    <>
+      {/* 更多菜單 */}
+      {breadcrumbItems.length > 3 && (
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleMoreClose}
+          id="breadcrumb-menu"
+        >
+          {breadcrumbItems
+            .slice(0, breadcrumbItems.length - 2)
+            .map((item, index) => (
+              <MenuItem
+                key={index}
+                onClick={() => {
+                  handleBreadcrumbClick(index);
+                  handleMoreClose();
+                }}
+              >
+                {item.label}
+              </MenuItem>
+            ))}
+        </Menu>
+      )}
+
+      {/* 麵包屑導航 */}
+      <Breadcrumbs
+        separator={<NavigateNextIcon fontSize="small" />}
+        aria-label="breadcrumbs"
+      >
+        {getBreadCrumbs()}
+      </Breadcrumbs>
+    </>
+  );
+};
+```
+===
+```tsx
+// src/components/layout/Breadcrumb.tsx
+import React, { useState } from "react";
+import {
+  Breadcrumbs,
+  Link,
+  Typography,
+  IconButton,
+  Menu,
+  MenuItem,
+} from "@mui/material";
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import { useNavigate } from "react-router-dom";
+import { useLayoutStore } from "../../stores/layoutStore";
+import type { BreadcrumbItem } from "../../types";
+
+export const Breadcrumb: React.FC = () => {
+  const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const breadcrumb: BreadcrumbItem[] = useLayoutStore(
+    (state) => state.breadcrumbItems
+  );
+
+  // 最大顯示項目數 (不包括省略號)
+  const maxItems = 3;
+  const itemsBeforeCollapse = 0; // 折疊前顯示的項目數
+  const itemsAfterCollapse = 1; // 折疊後顯示的項目數
+  const shouldShowCollapsedMenu = breadcrumb.length > maxItems;
+
+  const getBreadcrumbPath = (index: number) => {
+    if (index < 0 || index >= breadcrumb.length) return "/";
+    return (
+      "/" +
+      breadcrumb
+        .slice(0, index + 1)
+        .map((item) => item.path.replace(/^\//, ""))
+        .join("/")
+    );
+  };
+
+  const handleBreadcrumbClick = (index: number) => {
+    navigate(getBreadcrumbPath(index));
+  };
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  // 處理折疊菜單中的項目點擊
+  const handleMenuItemClick = (index: number) => {
+    handleBreadcrumbClick(index);
+    handleMenuClose();
+  };
+
+  // 計算要在菜單中顯示的項目
+  const getCollapsedItems = () => {
+    if (!shouldShowCollapsedMenu) return [];
+
+    // 計算要在菜單中顯示的項目範圍
+    const start = itemsBeforeCollapse;
+    const end = breadcrumb.length - itemsAfterCollapse;
+    return breadcrumb.slice(start, end);
+  };
+
+  // 計算要直接顯示的項目
+  const getVisibleItems = () => {
+    if (!shouldShowCollapsedMenu) return breadcrumb;
+
+    const firstItems =
+      itemsBeforeCollapse > 0 ? breadcrumb.slice(0, itemsBeforeCollapse) : [];
+
+    const lastItems = breadcrumb.slice(breadcrumb.length - itemsAfterCollapse);
+
+    return [...firstItems, ...lastItems];
+  };
+
+  const collapsedItems = getCollapsedItems();
+  const visibleItems = getVisibleItems();
+
+  return (
+    <>
+      <Menu
+        id="breadcrumb-menu"
+        anchorEl={anchorEl}
+        keepMounted
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+      >
+        {collapsedItems.map((item, index) => {
+          // 計算實際索引，考慮前面已顯示的項目
+          const actualIndex = index + itemsBeforeCollapse;
+          return (
+            <MenuItem
+              key={`collapsed-${index}`}
+              onClick={() => handleMenuItemClick(actualIndex)}
+            >
+              {item.label}
+            </MenuItem>
+          );
+        })}
+      </Menu>
+      <Breadcrumbs
+        separator={<NavigateNextIcon fontSize="small" />}
+        aria-label="breadcrumb"
+      >
+        {/* 顯示直接可見的項目 */}
+        {shouldShowCollapsedMenu &&
+          itemsBeforeCollapse > 0 &&
+          visibleItems.slice(0, itemsBeforeCollapse).map((item, index) => (
+            <Link
+              key={`visible-start-${index}`}
+              color="inherit"
+              component="button"
+              onClick={() => handleBreadcrumbClick(index)}
+              underline="hover"
+            >
+              {item.label}
+            </Link>
+          ))}
+
+        {/* 折疊菜單 */}
+        {shouldShowCollapsedMenu && (
+          <IconButton
+            size="small"
+            aria-label="more"
+            aria-controls="breadcrumb-menu"
+            aria-haspopup="true"
+            onClick={handleMenuOpen}
+            sx={{ padding: 0.5 }}
+          >
+            <MoreHorizIcon fontSize="small" />
+          </IconButton>
+        )}
+
+        {/* 顯示最後的項目 */}
+        {shouldShowCollapsedMenu ? (
+          // 最後一個項目 (當前頁面)
+          <Typography color="text.primary" sx={{ fontWeight: "bold" }}>
+            {breadcrumb[breadcrumb.length - 1].label}
+          </Typography>
+        ) : (
+          // 如果項目數不多，直接顯示所有項目
+          breadcrumb.map((item, index) => {
+            const isLast = index === breadcrumb.length - 1;
+            return isLast ? (
+              <Typography
+                key={`full-${index}`}
+                color="text.primary"
+                sx={{ fontWeight: "bold" }}
+              >
+                {item.label}
+              </Typography>
+            ) : (
+              <Link
+                key={`full-${index}`}
+                color="inherit"
+                component="button"
+                onClick={() => handleBreadcrumbClick(index)}
+                underline="hover"
+              >
+                {item.label}
+              </Link>
+            );
+          })
+        )}
+      </Breadcrumbs>
+    </>
+  );
+};
+```
+===
+```tsx
+// src/components/layout/Breadcrumb.tsx
+import React, { useState } from "react";
+import {
+  Breadcrumbs,
+  Typography,
+  IconButton,
+  Menu,
+  MenuItem,
+  Link,
+} from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { useLayoutStore } from "../../stores/layoutStore";
+import type { BreadcrumbItem } from "../../types";
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+
+export const Breadcrumb: React.FC = () => {
+  const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const breadcrumbItems: BreadcrumbItem[] = useLayoutStore(
+    (state) => state.breadcrumbItems
+  );
+
+  const getBreadcrumbPath = (index: number) => {
+    return (
+      "/" +
+      breadcrumbItems
+        .slice(0, index + 1)
+        .map((item) => item.path.replace(/^\//, ""))
+        .join("/")
+    );
+  };
+
+  const handleBreadcrumbClick = (index: number) => {
+    navigate(getBreadcrumbPath(index));
+  };
+
+  const handleMoreClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMoreClose = () => {
+    setAnchorEl(null);
+  };
+
+  const getBreadcrumbViewItem = (key: number | string, label: string, link: string, isLast = false) => {
+    const fontWeight = isLast ? 'bold' : 'normal';
+    const color = isLast ? 'primary.main' : 'inherit';
+    return <Link
+      key={key}
+      underline="hover"
+      href={link}
+      sx={{
+        fontWeight: fontWeight,
+        color: color
+      }}
+    >
+      {label}
+    </Link>
+  }
+
+  const getBreadCrumbs = () => {
+
+    return breadcrumbItems.length <= 3
+      ? breadcrumbItems.map(({ label }, i) => (
+        getBreadcrumbViewItem(i, label, getBreadcrumbPath(i), i === breadcrumbItems.length - 1)
+      ))
+      : [
+        <IconButton size="small" onClick={handleMoreClick}>
+          <Typography fontSize={12}>...</Typography>
+        </IconButton>,
+        getBreadcrumbViewItem(breadcrumbItems.length - 2, breadcrumbItems[breadcrumbItems.length - 2].label, getBreadcrumbPath(breadcrumbItems.length - 2), false),
+        getBreadcrumbViewItem(breadcrumbItems.length - 1, breadcrumbItems[breadcrumbItems.length - 1].label, getBreadcrumbPath(breadcrumbItems.length - 1), true),
+      ];
+  };
+
+  const breadcrumbs = getBreadCrumbs();
+
+  return (<>
+    {/* More Menu */}
+    {breadcrumbItems.length > 3
+      && <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMoreClose}
+      >
+        {breadcrumbItems
+          .slice(0, breadcrumbItems.length - 2)
+          .map(({ label }, i) => (
+            <MenuItem
+              key={i}
+              onClick={() => {
+                handleBreadcrumbClick(i);
+                handleMoreClose();
+              }}
+            >
+              {label}
+            </MenuItem>
+          ))}
+      </Menu>
+    }
+    <Breadcrumbs
+      separator={<NavigateNextIcon fontSize="small" />}
+      aria-label="breadcrumbs"
+    >
+      {breadcrumbs}
+    </Breadcrumbs>
+  </>
+
+  );
+};
+```
+
+## ChatGPT 回答 Breadcrumb重構
+我幫你比較一下三個版本，並給一個我認為更佳的版本：
+
+---
+
+### 差異分析
+
+1. **第一版**
+
+   * 優點：
+
+     * 結構清晰，函式有語意化名稱（`renderBreadcrumbItem`, `getBreadCrumbs`）。
+     * 樣式控制細緻（如 `fontWeight`、`color` 都有明確處理）。
+   * 缺點：
+
+     * 用 `<Link href>` 而不是 `react-router-dom` 的 navigation，導致會整頁 reload，而不是 SPA navigation（UX 不佳）。
+     * `IconButton` 省略號用 `<span>`，語意上稍微差。
+     * 沒有針對「當前頁」使用 `<Typography>` 來強調。
+
+---
+
+2. **第二版**
+
+   * 優點：
+
+     * 使用 MUI 官方推薦的模式：最後一個用 `<Typography>`，其他用 `<Link>`。
+     * 折疊處理更靈活（`maxItems`、`itemsBeforeCollapse`、`itemsAfterCollapse` 可調整）。
+     * 使用 `<MoreHorizIcon />` 而不是 `...`，更直觀。
+   * 缺點：
+
+     * 稍微複雜，邏輯層層包裝，程式碼較長。
+     * 參數設定雖然彈性，但實際專案中可能不會常調整。
+
+---
+
+3. **第三版**
+
+   * 優點：
+
+     * 簡潔，程式碼行數最少，邏輯直觀。
+     * 有將「項目渲染」抽象成 `getBreadcrumbViewItem`。
+   * 缺點：
+
+     * 和第一版一樣，用 `href` 而不是 `navigate`。
+     * 沒有把「當前頁」特別標示成 `<Typography>`，而是仍然用 `<Link>`。
+
+---
+
+### 結論
+
+* **最佳選擇：第二版**
+  因為它符合 **MUI 官方推薦模式**：最後一個項目用 `<Typography>`，其他才是可點擊的 `<Link>`。
+  另外，它用 `MoreHorizIcon` 也比單純 `...` 更語意化。
+
+不過我覺得第二版可以再**簡化**，因為 `itemsBeforeCollapse` 與 `itemsAfterCollapse` 在大多數場景都用不到，硬寫在那裡會顯得繁瑣。
+
+---
+
+### 我建議的「改良版」(結合第二版 + 精簡化)：
+
+```tsx
+// src/components/layout/Breadcrumb.tsx
+import React, { useState } from "react";
+import {
+  Breadcrumbs,
+  Link,
+  Typography,
+  IconButton,
+  Menu,
+  MenuItem,
+} from "@mui/material";
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import { useNavigate } from "react-router-dom";
+import { useLayoutStore } from "../../stores/layoutStore";
+import type { BreadcrumbItem } from "../../types";
+
+export const Breadcrumb: React.FC = () => {
+  const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const breadcrumbItems: BreadcrumbItem[] = useLayoutStore(
+    (state) => state.breadcrumbItems
+  );
+
+  const getBreadcrumbPath = (index: number) =>
+    "/" +
+    breadcrumbItems
+      .slice(0, index + 1)
+      .map((item) => item.path.replace(/^\//, ""))
+      .join("/");
+
+  const handleNavigate = (index: number) => {
+    navigate(getBreadcrumbPath(index));
+    setAnchorEl(null);
+  };
+
+  const visibleItems =
+    breadcrumbItems.length > 3
+      ? breadcrumbItems.slice(-2) // 只顯示最後兩個
+      : breadcrumbItems;
+
+  return (
+    <>
+      {/* 折疊選單 */}
+      {breadcrumbItems.length > 3 && (
+        <Menu
+          id="breadcrumb-menu"
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={() => setAnchorEl(null)}
+        >
+          {breadcrumbItems.slice(0, -2).map((item, index) => (
+            <MenuItem key={index} onClick={() => handleNavigate(index)}>
+              {item.label}
+            </MenuItem>
+          ))}
+        </Menu>
+      )}
+
+      <Breadcrumbs
+        separator={<NavigateNextIcon fontSize="small" />}
+        aria-label="breadcrumbs"
+      >
+        {/* 折疊按鈕 */}
+        {breadcrumbItems.length > 3 && (
+          <IconButton
+            size="small"
+            onClick={(e) => setAnchorEl(e.currentTarget)}
+            sx={{ p: 0.5 }}
+          >
+            <MoreHorizIcon fontSize="small" />
+          </IconButton>
+        )}
+
+        {/* 直接顯示的項目 */}
+        {visibleItems.map((item, index) => {
+          const isLast = index === visibleItems.length - 1;
+          const actualIndex =
+            breadcrumbItems.length > 3
+              ? breadcrumbItems.length - 2 + index
+              : index;
+
+          return isLast ? (
+            <Typography
+              key={item.path}
+              color="text.primary"
+              sx={{ fontWeight: "bold" }}
+            >
+              {item.label}
+            </Typography>
+          ) : (
+            <Link
+              key={item.path}
+              color="inherit"
+              underline="hover"
+              component="button"
+              onClick={() => handleNavigate(actualIndex)}
+            >
+              {item.label}
+            </Link>
+          );
+        })}
+      </Breadcrumbs>
+    </>
+  );
+};
+```
+
+---
+
+✅ 優點：
+
+* 保留第二版「語意正確」的做法（最後一個 `<Typography>`）。
+* 簡化掉 `maxItems` / `itemsBeforeCollapse` / `itemsAfterCollapse`，更直觀。
+* 使用 `MoreHorizIcon` 而不是 `...`。
+* `navigate` 而不是 `href`，保持 SPA 體驗。
+
+---
+
+要我幫你把這個「改良版」再改成 **支援響應式 (小螢幕更積極折疊)** 的版本嗎？
+
+
+## ChatGPT 提問 支援響應式 (小螢幕更積極折疊)
+支援響應式 (小螢幕更積極折疊)
+
+## ChatGPT 回答 支援響應式 (小螢幕更積極折疊)
+
+好的 👍
+我們可以在「桌面端」保留最多 3 個麵包屑（中間折疊），但在「小螢幕」時更積極折疊，例如只顯示最後一個，其他都放進折疊選單裡。
+
+這裡我會用 **MUI 的 `useMediaQuery`** 搭配主題斷點來做：
+
+```tsx
+// src/components/layout/Breadcrumb.tsx
+import React, { useState } from "react";
+import {
+  Breadcrumbs,
+  Link,
+  Typography,
+  IconButton,
+  Menu,
+  MenuItem,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import { useNavigate } from "react-router-dom";
+import { useLayoutStore } from "../../stores/layoutStore";
+import type { BreadcrumbItem } from "../../types";
+
+export const Breadcrumb: React.FC = () => {
+  const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const breadcrumbItems: BreadcrumbItem[] = useLayoutStore(
+    (state) => state.breadcrumbItems
+  );
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // 小螢幕判斷
+
+  const getBreadcrumbPath = (index: number) =>
+    "/" +
+    breadcrumbItems
+      .slice(0, index + 1)
+      .map((item) => item.path.replace(/^\//, ""))
+      .join("/");
+
+  const handleNavigate = (index: number) => {
+    navigate(getBreadcrumbPath(index));
+    setAnchorEl(null);
+  };
+
+  // 判斷可見項目
+  const visibleItems = (() => {
+    if (breadcrumbItems.length <= 1) return breadcrumbItems;
+
+    if (isMobile) {
+      // 小螢幕只顯示最後一個
+      return [breadcrumbItems[breadcrumbItems.length - 1]];
+    } else if (breadcrumbItems.length > 3) {
+      // 桌面端顯示最後兩個
+      return breadcrumbItems.slice(-2);
+    } else {
+      return breadcrumbItems;
+    }
+  })();
+
+  const hasCollapsedMenu =
+    (isMobile && breadcrumbItems.length > 1) ||
+    (!isMobile && breadcrumbItems.length > 3);
+
+  return (
+    <>
+      {/* 折疊選單 */}
+      {hasCollapsedMenu && (
+        <Menu
+          id="breadcrumb-menu"
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={() => setAnchorEl(null)}
+        >
+          {breadcrumbItems
+            .slice(0, breadcrumbItems.length - visibleItems.length)
+            .map((item, index) => (
+              <MenuItem key={item.path} onClick={() => handleNavigate(index)}>
+                {item.label}
+              </MenuItem>
+            ))}
+        </Menu>
+      )}
+
+      <Breadcrumbs
+        separator={<NavigateNextIcon fontSize="small" />}
+        aria-label="breadcrumbs"
+      >
+        {/* 折疊按鈕 */}
+        {hasCollapsedMenu && (
+          <IconButton
+            size="small"
+            onClick={(e) => setAnchorEl(e.currentTarget)}
+            sx={{ p: 0.5 }}
+          >
+            <MoreHorizIcon fontSize="small" />
+          </IconButton>
+        )}
+
+        {/* 直接顯示的項目 */}
+        {visibleItems.map((item, index) => {
+          const isLast = index === visibleItems.length - 1;
+          const actualIndex =
+            breadcrumbItems.length - visibleItems.length + index;
+
+          return isLast ? (
+            <Typography
+              key={item.path}
+              color="text.primary"
+              sx={{ fontWeight: "bold" }}
+            >
+              {item.label}
+            </Typography>
+          ) : (
+            <Link
+              key={item.path}
+              color="inherit"
+              underline="hover"
+              component="button"
+              onClick={() => handleNavigate(actualIndex)}
+            >
+              {item.label}
+            </Link>
+          );
+        })}
+      </Breadcrumbs>
+    </>
+  );
+};
+```
+
+---
+
+### 📱 效果
+
+* **桌面端 (≥ sm)**
+
+  * 若項目 ≤ 3 → 全部顯示
+  * 若項目 > 3 → 折疊中間，只顯示最後 2 個
+
+* **手機端 (< sm)**
+
+  * 只顯示最後一個，其餘都進折疊選單
+
+---
+
+要不要我幫你加一個 **demo 截圖 UI 範例 (假資料)**，讓你直觀看到「桌面版 vs 手機版」的效果？
+
+
 ## Copilot 提問 
 ## Copilot 回答 
 ## Copilot 提問 
