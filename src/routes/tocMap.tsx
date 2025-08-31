@@ -1,9 +1,35 @@
 // src/routes/tocMap.ts
-import { BarChart, Dashboard, Download, UploadFile } from "@mui/icons-material";
+import {
+  BarChart,
+  BugReport,
+  Dashboard,
+  Download,
+  UploadFile,
+} from "@mui/icons-material";
 import type { TocItem } from "../types";
 
 export const tocMap: Record<string, TocItem[]> = {
   "/": [
+    { label: "上傳資料", path: "/upload", icon: <UploadFile /> },
+    { label: "圖表設定", path: "/chart-config", icon: <BarChart /> },
+    { label: "儀表板", path: "/dashboard", icon: <Dashboard /> },
+    { label: "下載報表", path: "/download", icon: <Download /> },
+    { label: "測試頁", path: "/testing", icon: <BugReport /> },
+  ],
+  "/upload": [
+    { label: "上傳資料", path: "/upload", icon: <UploadFile /> },
+    { label: "圖表設定", path: "/chart-config", icon: <BarChart /> },
+  ],
+  "/chart-config": [
+    { label: "圖表設定", path: "/chart-config", icon: <BarChart /> },
+    { label: "儀表板", path: "/dashboard", icon: <Dashboard /> },
+  ],
+  "/dashboard": [
+    { label: "儀表板", path: "/dashboard", icon: <Dashboard /> },
+    { label: "下載報表", path: "/download", icon: <Download /> },
+  ],
+  "/download": [{ label: "下載報表", path: "/download", icon: <Download /> }],
+  "/testing": [
     { label: "上傳資料", path: "/upload", icon: <UploadFile /> },
     {
       label: "圖表設定",
@@ -45,18 +71,6 @@ export const tocMap: Record<string, TocItem[]> = {
       ],
     },
     { label: "下載報表", path: "/download", icon: <Download /> },
+    { label: "測試頁", path: "/testing", icon: <BugReport /> },
   ],
-  "/upload": [
-    { label: "上傳資料", path: "/upload", icon: <UploadFile /> },
-    { label: "圖表設定", path: "/chart-config", icon: <BarChart /> },
-  ],
-  "/chart-config": [
-    { label: "圖表設定", path: "/chart-config", icon: <BarChart /> },
-    { label: "儀表板", path: "/dashboard", icon: <Dashboard /> },
-  ],
-  "/dashboard": [
-    { label: "儀表板", path: "/dashboard", icon: <Dashboard /> },
-    { label: "下載報表", path: "/download", icon: <Download /> },
-  ],
-  "/download": [{ label: "下載報表", path: "/download", icon: <Download /> }],
 };

@@ -1113,8 +1113,223 @@ export const TocList = memo(TocListBase);
 
 最推薦的重構方案是 將遞迴邏輯封裝成獨立的 `TocListItem` 元件，這能根本上解決效能和可讀性的問題，並讓每個元件都只專注於一個單一職責。這也是大型 `React` 應用中處理遞迴或巢狀清單的標準模式。
 
-## Copilot 提問 
-## Copilot 回答 
+## Monica:GPT 4o 提問 
+根據 MUI Breadcrumbs 文檔 https://mui.com/material-ui/react-breadcrumbs/#condensed-with-menu 整理重構代碼
+
+```tsx
+// src/components/layout/Breadcrumb.tsx
+import React, { useState } from "react";
+import { Box, Typography, IconButton, Menu, MenuItem } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { useLayoutStore } from "../../stores/layoutStore";
+import type { BreadcrumbItem } from "../../types";
+
+export const Breadcrumb: React.FC = () => {
+  const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const breadcrumb: BreadcrumbItem[] = useLayoutStore(
+    (state) => state.breadcrumb
+  );
+
+  console.log("Breadcrumb items:", breadcrumb);
+
+  const getBreadcrumbPath = (index: number) => {
+    if (index < 0 || index >= breadcrumb.length) {
+      return "/";
+    }
+
+    return (
+      "/" +
+      breadcrumb
+        .slice(0, index + 1)
+        .map((item) => item.path.replace(/^\//, ""))
+        .join("/")
+    );
+  };
+
+  const handleBreadcrumbClick = (index: number) => {
+    const path = getBreadcrumbPath(index);
+    navigate(path);
+  };
+
+  const handleMoreClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMoreClose = () => {
+    setAnchorEl(null);
+  };
+
+  return (
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      {breadcrumb.length > 3 ? (
+        <>
+          <IconButton size="small" onClick={handleMoreClick}>
+            <Typography fontSize={12}>...</Typography>
+          </IconButton>
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleMoreClose}
+          >
+            {breadcrumb.slice(0, breadcrumb.length - 2).map(({ label }, i) => (
+              <MenuItem
+                key={i}
+                onClick={() => {
+                  handleBreadcrumbClick(i);
+                  handleMoreClose();
+                }}
+              >
+                {label}
+              </MenuItem>
+            ))}
+          </Menu>
+          <Typography>{">"}</Typography>
+          <Typography
+            sx={{ cursor: "pointer" }}
+            onClick={() => handleBreadcrumbClick(breadcrumb.length - 2)}
+          >
+            {breadcrumb[breadcrumb.length - 2].label}
+          </Typography>
+          <Typography>{">"}</Typography>
+          <Typography
+            sx={{
+              cursor: "pointer",
+              fontWeight: "bold",
+              color: "primary.main",
+            }}
+            onClick={() => handleBreadcrumbClick(breadcrumb.length - 1)}
+          >
+            {breadcrumb[breadcrumb.length - 1].label}
+          </Typography>
+        </>
+      ) : (
+        breadcrumb.map(({ label }, i) => (
+          <React.Fragment key={i}>
+            {i > 0 && <Typography>{">"}</Typography>}
+            <Typography
+              sx={{
+                cursor: "pointer",
+                fontWeight: i === breadcrumb.length - 1 ? "bold" : "normal",
+                color: i === breadcrumb.length - 1 ? "primary.main" : "inherit",
+              }}
+              onClick={() => handleBreadcrumbClick(i)}
+            >
+              {label}
+            </Typography>
+          </React.Fragment>
+        ))
+      )}
+    </Box>
+  );
+};
+```
+
+## Monica:GPT 4o 回答 
+
+根據 MUI Breadcrumbs 文檔的建議，我們可以使用 `Breadcrumbs` 和 `Menu` 元件來重構代碼，使其更加簡潔和符合 MUI 的最佳實踐。以下是重構後的代碼：
+
+```tsx
+import React, { useState } from "react";
+import { Breadcrumbs, Typography, IconButton, Menu, MenuItem, Box } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { useLayoutStore } from "../../stores/layoutStore";
+import type { BreadcrumbItem } from "../../types";
+
+export const Breadcrumb: React.FC = () => {
+  const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const breadcrumb: BreadcrumbItem[] = useLayoutStore((state) => state.breadcrumb);
+
+  const getBreadcrumbPath = (index: number) => {
+    return "/" + breadcrumb.slice(0, index + 1).map((item) => item.path.replace(/^\//, "")).join("/");
+  };
+
+  const handleBreadcrumbClick = (index: number) => {
+    navigate(getBreadcrumbPath(index));
+  };
+
+  const handleMoreClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMoreClose = () => {
+    setAnchorEl(null);
+  };
+
+  return (
+    <Breadcrumbs separator=">">
+      {breadcrumb.length > 3 ? (
+        <>
+          <IconButton size="small" onClick={handleMoreClick}>
+            <Typography fontSize={12}>...</Typography>
+          </IconButton>
+          <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMoreClose}>
+            {breadcrumb.slice(0, breadcrumb.length - 2).map(({ label }, i) => (
+              <MenuItem
+                key={i}
+                onClick={() => {
+                  handleBreadcrumbClick(i);
+                  handleMoreClose();
+                }}
+              >
+                {label}
+              </MenuItem>
+            ))}
+          </Menu>
+          <Typography
+            sx={{ cursor: "pointer" }}
+            onClick={() => handleBreadcrumbClick(breadcrumb.length - 2)}
+          >
+            {breadcrumb[breadcrumb.length - 2].label}
+          </Typography>
+          <Typography
+            sx={{
+              cursor: "pointer",
+              fontWeight: "bold",
+              color: "primary.main",
+            }}
+            onClick={() => handleBreadcrumbClick(breadcrumb.length - 1)}
+          >
+            {breadcrumb[breadcrumb.length - 1].label}
+          </Typography>
+        </>
+      ) : (
+        breadcrumb.map(({ label }, i) => (
+          <Typography
+            key={i}
+            sx={{
+              cursor: "pointer",
+              fontWeight: i === breadcrumb.length - 1 ? "bold" : "normal",
+              color: i === breadcrumb.length - 1 ? "primary.main" : "inherit",
+            }}
+            onClick={() => handleBreadcrumbClick(i)}
+          >
+            {label}
+          </Typography>
+        ))
+      )}
+    </Breadcrumbs>
+  );
+};
+```
+
+### 重構後的改進點：
+1. **使用 `Breadcrumbs` 元件**：
+   - MUI 的 `Breadcrumbs` 元件提供了內建的分隔符和結構，簡化了手動處理分隔符的代碼。
+
+2. **簡化分支邏輯**：
+   - 使用 `Breadcrumbs` 的子元素來處理普通情況和超過 3 個項目的情況，減少了代碼的複雜性。
+
+3. **更清晰的樣式處理**：
+   - 將樣式集中在 `Typography` 的 `sx` 屬性中，並根據條件動態設置樣式。
+
+4. **更易於擴展和維護**：
+   - 重構後的代碼更符合 React 的組件化思想，並且結構更加清晰，便於未來的擴展和修改。
+
+### 使用方式：
+將此代碼保存為 `src/components/layout/Breadcrumb.tsx`，並在需要的地方導入使用即可。
+
 ## Copilot 提問 
 ## Copilot 回答 
 ## Copilot 提問 

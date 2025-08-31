@@ -42,7 +42,7 @@ export const TocListItem: React.FC<Props> = ({
     : { to: item.path };
 
   return (
-    <Box sx={{ pl: level * indentPerLevel }}>
+    <Box sx={{ pl: level == 0 ? 0 : indentPerLevel }}>
       <ListItemButton component={Component} {...componentProps}>
         {item.icon && <Box sx={{ mr: 1 }}>{item.icon}</Box>}
         <ListItemText primary={item.label} />

@@ -1,27 +1,29 @@
 // src/components/layout/Breadcrumb.tsx
 import React, { useState } from "react";
-import { Box, Typography, IconButton, Menu, MenuItem } from "@mui/material";
+import {
+  Breadcrumbs,
+  Typography,
+  IconButton,
+  Menu,
+  MenuItem,
+  Link,
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useLayoutStore } from "../../stores/layoutStore";
 import type { BreadcrumbItem } from "../../types";
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 
 export const Breadcrumb: React.FC = () => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const breadcrumb: BreadcrumbItem[] = useLayoutStore(
-    (state) => state.breadcrumb
+  const breadcrumbItems: BreadcrumbItem[] = useLayoutStore(
+    (state) => state.breadcrumbItems
   );
 
-  console.log("Breadcrumb items:", breadcrumb);
-
   const getBreadcrumbPath = (index: number) => {
-    if (index < 0 || index >= breadcrumb.length) {
-      return "/";
-    }
-
     return (
       "/" +
-      breadcrumb
+      breadcrumbItems
         .slice(0, index + 1)
         .map((item) => item.path.replace(/^\//, ""))
         .join("/")
@@ -29,8 +31,7 @@ export const Breadcrumb: React.FC = () => {
   };
 
   const handleBreadcrumbClick = (index: number) => {
-    const path = getBreadcrumbPath(index);
-    navigate(path);
+    navigate(getBreadcrumbPath(index));
   };
 
   const handleMoreClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -41,66 +42,69 @@ export const Breadcrumb: React.FC = () => {
     setAnchorEl(null);
   };
 
-  return (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-      {breadcrumb.length > 3 ? (
-        <>
-          <IconButton size="small" onClick={handleMoreClick}>
-            <Typography fontSize={12}>...</Typography>
-          </IconButton>
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleMoreClose}
-          >
-            {breadcrumb.slice(0, breadcrumb.length - 2).map(({ label }, i) => (
-              <MenuItem
-                key={i}
-                onClick={() => {
-                  handleBreadcrumbClick(i);
-                  handleMoreClose();
-                }}
-              >
-                {label}
-              </MenuItem>
-            ))}
-          </Menu>
-          <Typography>{">"}</Typography>
-          <Typography
-            sx={{ cursor: "pointer" }}
-            onClick={() => handleBreadcrumbClick(breadcrumb.length - 2)}
-          >
-            {breadcrumb[breadcrumb.length - 2].label}
-          </Typography>
-          <Typography>{">"}</Typography>
-          <Typography
-            sx={{
-              cursor: "pointer",
-              fontWeight: "bold",
-              color: "primary.main",
-            }}
-            onClick={() => handleBreadcrumbClick(breadcrumb.length - 1)}
-          >
-            {breadcrumb[breadcrumb.length - 1].label}
-          </Typography>
-        </>
-      ) : (
-        breadcrumb.map(({ label }, i) => (
-          <React.Fragment key={i}>
-            {i > 0 && <Typography>{">"}</Typography>}
-            <Typography
-              sx={{
-                cursor: "pointer",
-                fontWeight: i === breadcrumb.length - 1 ? "bold" : "normal",
-                color: i === breadcrumb.length - 1 ? "primary.main" : "inherit",
+  const getBreadcrumbViewItem = (key: number | string, label: string, link: string, isLast = false) => {
+    const fontWeight = isLast ? 'bold' : 'normal';
+    const color = isLast ? 'primary.main' : 'inherit';
+    return <Link
+      key={key}
+      underline="hover"
+      href={link}
+      sx={{
+        fontWeight: fontWeight,
+        color: color
+      }}
+    >
+      {label}
+    </Link>
+  }
+
+  const getBreadCrumbs = () => {
+
+    return breadcrumbItems.length <= 3
+      ? breadcrumbItems.map(({ label }, i) => (
+        getBreadcrumbViewItem(i, label, getBreadcrumbPath(i), i === breadcrumbItems.length - 1)
+      ))
+      : [
+        <IconButton size="small" onClick={handleMoreClick}>
+          <Typography fontSize={12}>...</Typography>
+        </IconButton>,
+        getBreadcrumbViewItem(breadcrumbItems.length - 2, breadcrumbItems[breadcrumbItems.length - 2].label, getBreadcrumbPath(breadcrumbItems.length - 2), false),
+        getBreadcrumbViewItem(breadcrumbItems.length - 1, breadcrumbItems[breadcrumbItems.length - 1].label, getBreadcrumbPath(breadcrumbItems.length - 1), true),
+      ];
+  };
+
+  const breadcrumbs = getBreadCrumbs();
+
+  return (<>
+    {/* More Menu */}
+    {breadcrumbItems.length > 3
+      && <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMoreClose}
+      >
+        {breadcrumbItems
+          .slice(0, breadcrumbItems.length - 2)
+          .map(({ label }, i) => (
+            <MenuItem
+              key={i}
+              onClick={() => {
+                handleBreadcrumbClick(i);
+                handleMoreClose();
               }}
-              onClick={() => handleBreadcrumbClick(i)}
             >
               {label}
-            </Typography>
-          </React.Fragment>
-        ))
-      )}
-    </Box>
+            </MenuItem>
+          ))}
+      </Menu>
+    }
+    <Breadcrumbs
+      separator={<NavigateNextIcon fontSize="small" />}
+      aria-label="breadcrumbs"
+    >
+      {breadcrumbs}
+    </Breadcrumbs>
+  </>
+
   );
 };

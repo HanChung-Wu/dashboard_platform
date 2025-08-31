@@ -13,7 +13,7 @@ export interface BreadcrumbItem {
 
 export interface PageConfig {
   tocItems: TocItem[];
-  breadcrumb: BreadcrumbItem[];
-  rightPanel?: React.ReactNode;
+  breadcrumbItems: BreadcrumbItem[];
+  rightPanelContent?: React.ReactNode;
   content: React.ReactNode;
 }
