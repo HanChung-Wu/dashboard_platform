@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+      - "feat/**"
+  pull_request:
+    branches:
+      - main
+      - dev
+
+jobs:
+  build-and-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Lint
+        run: npm run lint
+        continue-on-error: ${{ github.ref != 'refs/heads/main' }} # feat/dev 允許警告
+
+      - name: Type Check
+        run: npm run type-check
+        continue-on-error: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: Run Tests
+        run: npm test -- --coverage
+        continue-on-error: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: Run Security Audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: false
