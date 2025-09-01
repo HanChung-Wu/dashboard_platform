@@ -20,11 +20,11 @@ export interface PageConfig {
 
 export type Result<T, E> = Ok<T, E> | Err<T, E>;
 export class Ok<T, _> {
-  readonly type: "ok" = "ok";
+  readonly type = "ok" as const;
   constructor(public value: T) {}
 }
 
 export class Err<_, E> {
-  readonly type: "err" = "err";
+  readonly type = "err" as const;
   constructor(public error: E) {}
 }
