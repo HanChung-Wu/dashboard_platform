@@ -1642,18 +1642,3 @@ export const TopNav = () => {
 ```
 
 這個方法雖然需要額外設定型別，但它提供了更好的可維護性和開發者體驗。我強烈建議你使用這種方式，它能從根本上解決問題，並讓你的專案結構更清晰。
-
-## Gemini 提問 
-## Gemini 回答 
-## Gemini 提問 
-## Gemini 回答 
-## Gemini 提問 
-## Gemini 回答 
-## Gemini 提問 
-## Gemini 回答 
-## Gemini 提問 
-## Gemini 回答 
-## Gemini 提問 
-## Gemini 回答 
-## Gemini 提問 
-## Gemini 回答 

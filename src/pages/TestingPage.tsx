@@ -2,11 +2,8 @@
 import { Box, Typography } from "@mui/material";
 import { PageWrapper } from "../components/layout/PageWrapper";
 import { useLayoutContext } from "../context/useLayoutContext";
-import { tocMap } from "../routes/tocMap";
-import type { TocItem } from "../types";
-import DataTable from "../components/common/DataTable";
+import SimpleTable from "../components/common/SimpleTable";
 
-const tocItems: TocItem[] = tocMap["/testing"] || [];
 const sampleData = [
   {
     year: 2020,
@@ -26,10 +23,9 @@ const sampleData = [
 ];
 
 export const TestingPage = () => {
-  const { toggleRightPanelEnabled, setTocItems } = useLayoutContext();
+  const { toggleRightPanelEnabled } = useLayoutContext();
   return (
     <PageWrapper
-      tocItems={tocItems}
       breadcrumbItems={[
         { label: "測試1", path: "/testing1" },
         { label: "測試2", path: "/testing2" },
@@ -47,18 +43,11 @@ export const TestingPage = () => {
           >
             測試用:右側邊欄開關
           </button>
-          <button
-            onClick={() => {
-              setTocItems([...tocItems, { label: "測試用", path: "/test" }]);
-            }}
-          >
-            測試用:加入目錄
-          </button>
           <Box sx={{ padding: 3 }}>
             <Typography variant="h4" gutterBottom>
               Data Table
             </Typography>
-            <DataTable data={sampleData} />
+            <SimpleTable data={sampleData} />
           </Box>
         </div>
       }
