@@ -18,13 +18,7 @@ import {
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useState } from "react";
-
-interface DataTableInfo {
-  id: string;
-  name: string;
-  uploadDate: string;
-  fileSize: string;
-}
+import type { DataTableInfo } from "../../types";
 
 interface Props {
   dataTables: DataTableInfo[];
