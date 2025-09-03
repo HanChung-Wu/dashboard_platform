@@ -2,12 +2,17 @@
 import { Link } from "react-router-dom";
 import { Box } from "@mui/material";
 import Logo from "../common/Logo";
-import type { TocItem } from "../../types";
-import { useLayoutStore } from "../../stores/layoutStore";
 import { TocList } from "./TocList";
+import { BarChart, BugReport, Dashboard, Storage } from "@mui/icons-material";
 
 export const Sidebar = () => {
-  const tocItems: TocItem[] = useLayoutStore((state) => state.tocItems);
+  // 直接定義固定的導覽項目
+  const fixedTocItems = [
+    { label: "資料表格管理", path: "/data-tables", icon: <Storage /> },
+    { label: "儀表板管理", path: "/dashboards", icon: <Dashboard /> },
+    { label: "圖表管理", path: "/charts", icon: <BarChart /> },
+    { label: "測試頁面", path: "/testing", icon: <BugReport /> },
+  ];
   return (
     <Box
       sx={{
@@ -37,7 +42,7 @@ export const Sidebar = () => {
       </Box>
 
       {/* TOC 區塊 */}
-      <TocList tocItems={tocItems} />
+      <TocList tocItems={fixedTocItems} />
     </Box>
   );
 };

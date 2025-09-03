@@ -11,13 +11,13 @@ import {
   Typography,
 } from "@mui/material";
 
-interface DataTableProps<T extends Record<string, React.ReactNode>> {
+interface SimpleTableProps<T extends Record<string, React.ReactNode>> {
   data: T[];
 }
 
-const DataTable = <T extends Record<string, React.ReactNode>>({
+const SimpleTable = <T extends Record<string, React.ReactNode>>({
   data,
-}: DataTableProps<T>): React.ReactElement => {
+}: SimpleTableProps<T>): React.ReactElement => {
   if (!data || data.length === 0) {
     return (
       <Paper sx={{ padding: 2 }}>
@@ -59,4 +59,4 @@ const DataTable = <T extends Record<string, React.ReactNode>>({
   );
 };
 
-export default DataTable;
+export default SimpleTable;

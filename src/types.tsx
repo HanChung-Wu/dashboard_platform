@@ -18,6 +18,29 @@ export interface PageConfig {
   content: React.ReactNode;
 }
 
+export type ColumnType = "string" | "number" | "boolean" | "date";
+export interface ColumnInfo {
+  name: string;
+  desc?: string;
+  type: ColumnType;
+}
+
+export interface DataTableInfo {
+  id: string;
+  name: string;
+  uploadDate: string;
+  fileSize?: string | number;
+  columnInfos?: ColumnInfo[];
+}
+
+export type DataType = string | number | boolean | null | undefined;
+export type DataRow = Record<string, DataType>;
+export type DataTable = DataRow[];
+export interface DataTableWithInfo {
+  info: DataTableInfo;
+  data: DataTable;
+}
+
 export type Result<T, E> = Ok<T, E> | Err<T, E>;
 export class Ok<T, _> {
   readonly type = "ok" as const;
