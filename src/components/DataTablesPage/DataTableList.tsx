@@ -8,11 +8,18 @@ import {
   IconButton,
   Menu,
   MenuItem,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useState } from "react";
 
-interface DataTable {
+interface DataTableInfo {
   id: string;
   name: string;
   uploadDate: string;
@@ -20,10 +27,12 @@ interface DataTable {
 }
 
 interface Props {
-  dataTables: DataTable[];
+  dataTables: DataTableInfo[];
+  // 新增 viewMode 屬性
+  viewMode: "card" | "list";
 }
 
-export const DataTableList = ({ dataTables }: Props) => {
+export const DataTableList = ({ dataTables, viewMode }: Props) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
 
@@ -45,7 +54,41 @@ export const DataTableList = ({ dataTables }: Props) => {
     handleMenuClose();
   };
 
-  return (
+  // 渲染列表的 Helper 函式
+  const renderList = () => (
+    <TableContainer component={Paper}>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>表格名稱</TableCell>
+            <TableCell>上傳日期</TableCell>
+            <TableCell>檔案大小</TableCell>
+            <TableCell align="right">操作</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {dataTables.map((table) => (
+            <TableRow key={table.id}>
+              <TableCell>{table.name}</TableCell>
+              <TableCell>{table.uploadDate}</TableCell>
+              <TableCell>{table.fileSize}</TableCell>
+              <TableCell align="right">
+                <IconButton
+                  aria-label="more"
+                  onClick={(e) => handleMenuClick(e, table.id)}
+                >
+                  <MoreVertIcon />
+                </IconButton>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+
+  // 渲染卡片的 Helper 函式
+  const renderCards = () => (
     <Grid container spacing={3}>
       {dataTables.length > 0 ? (
         dataTables.map((table) => (
@@ -86,8 +129,20 @@ export const DataTableList = ({ dataTables }: Props) => {
           </Typography>
         </Grid>
       )}
+    </Grid>
+  );
 
-      {/* 單一表格操作選單 */}
+  return (
+    <Box>
+      {dataTables.length === 0 ? (
+        <Typography variant="h6" color="text.secondary" align="center">
+          沒有找到符合條件的資料表格。
+        </Typography>
+      ) : (
+        <>{viewMode === "card" ? renderCards() : renderList()}</>
+      )}
+
+      {/* 單一表格操作選單 (保持不變) */}
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -99,6 +154,6 @@ export const DataTableList = ({ dataTables }: Props) => {
         <MenuItem onClick={() => handleAction("下載")}>下載</MenuItem>
         <MenuItem onClick={() => handleAction("刪除")}>刪除</MenuItem>
       </Menu>
-    </Grid>
+    </Box>
   );
 };

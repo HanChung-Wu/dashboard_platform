@@ -6,16 +6,19 @@ import {
   TextField,
   Button,
   Grid,
-  IconButton,
+  ToggleButtonGroup,
+  ToggleButton,
 } from "@mui/material";
+import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
 import AddIcon from "@mui/icons-material/Add";
+import GridViewIcon from "@mui/icons-material/GridView";
 import { PageWrapper } from "../components/layout/PageWrapper";
 import type { PageConfig } from "../types";
 import { DataTableList } from "../components/DataTablesPage/DataTableList";
 import { UploadDataTableDialog } from "../components/DataTablesPage/UploadDataTableDialog";
 
 // 假資料，用於模擬從後端獲取的資料
-const fakeDataTables = [
+const fakeDataTableInfos = [
   {
     id: "1",
     name: "銷售數據",
@@ -39,11 +42,22 @@ const fakeDataTables = [
 export const DataTablesPage = () => {
   const [searchText, setSearchText] = useState("");
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"card" | "list">("card");
 
   // 根據搜尋關鍵字過濾資料
-  const filteredDataTables = fakeDataTables.filter((table) =>
+  const filteredDataTables = fakeDataTableInfos.filter((table) =>
     table.name.toLowerCase().includes(searchText.toLowerCase())
   );
+
+  const handleViewModeChange = (
+    _event: React.MouseEvent<HTMLElement>,
+    newViewMode: "card" | "list"
+  ) => {
+    // 只有當新模式不為 null 時才更新狀態
+    if (newViewMode !== null) {
+      setViewMode(newViewMode);
+    }
+  };
 
   // 頁面配置
   const pageConfig: Omit<PageConfig, "tocItems"> = {
@@ -51,10 +65,34 @@ export const DataTablesPage = () => {
     content: (
       <Box sx={{ p: 3 }}>
         <Grid container alignItems="center" spacing={2} sx={{ mb: 3 }}>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-              資料表格管理
-            </Typography>
+          <Grid
+            size={{ xs: 12, sm: 6 }}
+            container
+            alignItems="center"
+            spacing={2}
+          >
+            {/* 標題與模式切換按鈕 */}
+            <Grid>
+              <Typography variant="h4" sx={{ fontWeight: "bold" }}>
+                資料表格管理
+              </Typography>
+            </Grid>
+            <Grid>
+              <ToggleButtonGroup
+                value={viewMode}
+                exclusive
+                onChange={handleViewModeChange}
+                aria-label="view mode"
+                size="small"
+              >
+                <ToggleButton value="card" aria-label="card view">
+                  <GridViewIcon />
+                </ToggleButton>
+                <ToggleButton value="list" aria-label="list view">
+                  <FormatListBulletedIcon />
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Grid>
           </Grid>
           <Grid
             size={{ xs: 12, sm: 6 }}
@@ -62,6 +100,7 @@ export const DataTablesPage = () => {
             justifyContent="flex-end"
             spacing={1}
           >
+            {/* 搜尋框 */}
             <Grid>
               <TextField
                 label="搜尋表格"
@@ -71,6 +110,7 @@ export const DataTablesPage = () => {
                 onChange={(e) => setSearchText(e.target.value)}
               />
             </Grid>
+            {/* 上傳按鈕 */}
             <Grid>
               <Button
                 variant="contained"
@@ -83,8 +123,8 @@ export const DataTablesPage = () => {
           </Grid>
         </Grid>
 
-        {/* 資料表格列表 */}
-        <DataTableList dataTables={filteredDataTables} />
+        {/* 將 viewMode 作為 props 傳遞給 DataTableList */}
+        <DataTableList dataTables={filteredDataTables} viewMode={viewMode} />
 
         {/* 上傳資料表格對話框 */}
         <UploadDataTableDialog
