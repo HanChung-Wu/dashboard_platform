@@ -27,9 +27,35 @@ export const UploadDataTableDialog = ({ open, onClose }: Props) => {
   // 追蹤拖曳狀態
   const [isDragOver, setIsDragOver] = useState(false);
 
+  const handleCancel = () => {
+    if (!uploading) {
+      setSelectedFiles([]);
+      onClose();
+    }
+  };
+
+  const fileTypeFilter = (file: File) =>
+    uploadMode === "mode1"
+      ? file.type === "text/csv" || file.type === "application/json"
+      : file.type === "application/json";
+
+  const fileNameRepeatFilter = (file: File) => {
+    const existingFileNames = selectedFiles.map((f) => f.name);
+    return !existingFileNames.includes(file.name);
+  };
+
+  const preprocessFiles = (files: FileList) => {
+    const fileArray = Array.from(files);
+    return fileArray.filter(fileTypeFilter).filter(fileNameRepeatFilter);
+  };
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
-      setSelectedFiles(Array.from(event.target.files));
+      console.log("檔案已添加:", event.target.files);
+      setSelectedFiles([
+        ...selectedFiles,
+        ...preprocessFiles(event.target.files),
+      ]);
     }
   };
 
@@ -69,18 +95,15 @@ export const UploadDataTableDialog = ({ open, onClose }: Props) => {
     setIsDragOver(false);
     if (event.dataTransfer?.files) {
       console.log("檔案已拖放:", event.dataTransfer.files);
-      setSelectedFiles(
-        Array.from(event.dataTransfer.files).filter((file) =>
-          uploadMode === "mode1"
-            ? file.type === "text/csv" || file.type === "application/json"
-            : file.type === "application/json"
-        )
-      );
+      setSelectedFiles([
+        ...selectedFiles,
+        ...preprocessFiles(event.dataTransfer.files),
+      ]);
     }
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={handleCancel} maxWidth="sm" fullWidth>
       <DialogTitle>上傳資料表格</DialogTitle>
       <DialogContent dividers>
         <Typography variant="subtitle1" gutterBottom>
@@ -153,7 +176,7 @@ export const UploadDataTableDialog = ({ open, onClose }: Props) => {
         {uploading && <LinearProgress sx={{ mt: 2 }} />}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} disabled={uploading}>
+        <Button onClick={handleCancel} disabled={uploading}>
           取消
         </Button>
         <Button
