@@ -20,9 +20,11 @@ import {
   Grid,
   Button,
 } from "@mui/material";
-import { Edit as EditIcon } from "@mui/icons-material";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import CancelIcon from "@mui/icons-material/Cancel";
+import {
+  Edit as EditIcon,
+  Cancel as CancelIcon,
+  CheckCircleOutline as CheckCircleOutlineIcon,
+} from "@mui/icons-material";
 import { PageWrapper } from "../components/layout/PageWrapper";
 import { parseDataFile } from "../utils";
 import type { ParsedData } from "../types";
@@ -35,6 +37,10 @@ export const DataTableEditorPage = () => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<ParsedData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [editingCell, setEditingCell] = useState<{
+    rowIndex: number;
+    colIndex: number;
+  } | null>(null);
 
   const [tableName, setTableName] = useState<string>(
     file?.name.split(".")[0] || "未命名表格"
@@ -65,19 +71,13 @@ export const DataTableEditorPage = () => {
   const handleConfirm = () => {
     console.log(`確認並儲存表格: ${tableName}`);
     // 這裡可以加入儲存資料到後端的邏輯
-    navigate("/data-tables"); // 儲存後導航回列表頁
+    navigate("/data-tables");
   };
 
   const handleCancel = () => {
     console.log("取消編輯");
-    navigate("/data-tables"); // 取消後導航回列表頁
+    navigate("/data-tables");
   };
-
-  // 在 DataTableEditorPage 元件中新增狀態
-  const [editingCell, setEditingCell] = useState<{
-    rowIndex: number;
-    colIndex: number;
-  } | null>(null);
 
   const handleCellClick = (rowIndex: number, colIndex: number) => {
     setEditingCell({ rowIndex, colIndex });
@@ -89,11 +89,8 @@ export const DataTableEditorPage = () => {
     colIndex: number
   ) => {
     if (!data) return;
-    // 建立新的資料副本
     const newData = { ...data };
-    // 更新特定單元格的值
     newData.rows[rowIndex][colIndex] = e.target.value;
-    // 更新狀態
     setData(newData);
   };
 
@@ -178,7 +175,7 @@ export const DataTableEditorPage = () => {
             </Grid>
           )}
 
-          {/* 新增：確認與取消按鈕 */}
+          {/* 確認與取消按鈕 */}
           <Grid>
             <Button
               variant="outlined"
@@ -213,11 +210,21 @@ export const DataTableEditorPage = () => {
               component={Paper}
               sx={{ height: "70vh", overflow: "auto" }}
             >
-              <Table stickyHeader size="small">
+              <Table stickyHeader size="small" sx={{ minWidth: 650 }}>
                 <TableHead>
                   <TableRow>
                     {data.headers.map((header) => (
-                      <TableCell key={header} sx={{ fontWeight: "bold" }}>
+                      <TableCell
+                        key={header}
+                        sx={{
+                          fontWeight: "bold",
+                          minWidth: "150px", // 設定最小寬度，避免內容過少時擠壓
+                          maxWidth: "250px", // 設定最大寬度
+                          overflow: "hidden",
+                          textOverflow: "ellipsis", // 內容過長時顯示省略號
+                          whiteSpace: "nowrap", // 阻止自動換行
+                        }}
+                      >
                         {header}
                       </TableCell>
                     ))}
@@ -230,6 +237,13 @@ export const DataTableEditorPage = () => {
                         <TableCell
                           key={cellIndex}
                           onClick={() => handleCellClick(rowIndex, cellIndex)}
+                          sx={{
+                            minWidth: "150px",
+                            maxWidth: "250px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
                         >
                           {editingCell?.rowIndex === rowIndex &&
                           editingCell?.colIndex === cellIndex ? (
@@ -242,9 +256,19 @@ export const DataTableEditorPage = () => {
                               autoFocus
                               variant="standard"
                               size="small"
+                              sx={{
+                                width: "100%",
+                                "& .MuiInputBase-root": {
+                                  // 移除輸入框內部樣式
+                                  padding: 0,
+                                },
+                              }}
                             />
                           ) : (
-                            cell
+                            // 新增 Tooltip 處理單元格內容過長
+                            <Tooltip title={cell}>
+                              <Typography component="span">{cell}</Typography>
+                            </Tooltip>
                           )}
                         </TableCell>
                       ))}
