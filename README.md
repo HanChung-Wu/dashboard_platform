@@ -1,69 +1,128 @@
-# React + TypeScript + Vite
+# **資料管理與視覺化平台**
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> **⚠️ 注意：此倉庫仍處於開發階段，尚未完成完整的功能或正式發布。**
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## **專案簡介**
+本專案旨在建立一個模組化且可擴展的資料管理與視覺化平台。平台主要功能包括：
+- **資料表管理**：支援匯入、編輯、顯示及操作 CSV/JSON 資料。
+- **儀表板管理**：提供多層次的圖表編輯與視覺化功能。
+- **導航與佈局**：清晰的導航結構（側邊欄、頂部導航、麵包屑等）。
+- **狀態管理**：採用 Zustand 和 React Context 提升效能。
+- **響應式 UI**：整合 Material-UI，提供現代化的使用者界面。
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## **功能特性**
+### **1. 資料表管理**
+- **資料表編輯器**：支援檔案上傳（CSV/JSON），並動態解析與預覽。
+- **資料解析與型別安全性**：改善資料解析邏輯，確保型別一致性。
+- **視圖模式切換**：支援列表與卡片視圖模式，提升使用者體驗。
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### **2. 儀表板管理 (尚未實現)**
+- **新增儀表板功能**：支援儀表板的建立、編輯與顯示。
+- **右側面板**：動態顯示儀表板詳細內容。
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+### **3. 導航與佈局**
+- **麵包屑（Breadcrumb）**：響應式設計，根據螢幕大小動態顯示。
+- **側邊欄（Sidebar）**：嵌套、可折疊的導航結構，支援圖示顯示。
+- **頂部導航（TopNav）**：整合搜尋框與頁面標題顯示。
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### **4. 狀態管理**
+- **集中式狀態管理**：採用 Zustand 和 React Context，提升狀態共享效能。
+- **移除舊的 Context**：重構並改用更高效的狀態管理模式。
+
+### **5. UI 整合與響應式設計**
+- **Material-UI 整合**：使用 `Table`、`Grid` 等元件，提升視覺一致性。
+- **響應式設計**：支援多螢幕尺寸，提供最佳化的使用者體驗。
+
+### **6. 開發工作流與 CI/CD**
+- **GitHub Actions**：配置 lint、型別檢查、測試與安全性審核的 CI/CD 流程。
+- **依賴審查**：進行依賴性檢查以確保安全性。
+- **CodeQL 分析**：配置安全性分析工具。
+
+---
+
+## **專案架構**
+專案採用模組化設計，主要目錄結構如下：
+```
+├── src
+│   ├── components       # UI 元件
+│   ├── pages            # 頁面模組
+│   ├── utils            # 工具函式
+│   ├── types            # 型別定義
+│   ├── store            # Zustand 狀態管理
+│   └── assets           # 靜態資源
+├── public               # 公共資源
+├── tests                # 測試文件
+└── .github              # GitHub Actions 配置
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## **技術棧**
+- **前端框架**：React
+- **UI 庫**：Material-UI
+- **狀態管理**：Zustand + React Context
+- **型別檢查**：TypeScript
+- **測試框架**：Jest + React Testing Library
+- **CI/CD**：GitHub Actions
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+---
+
+## **開發指南**
+### **環境需求**
+- Node.js 版本：`>=16.0.0`
+- npm 或 yarn
+
+### **安裝**
+```bash
+# Clone 此倉庫
+git clone https://github.com/ohayowu314/dashboard_platform.git
+
+# 安裝依賴
+npm install
 ```
+
+### **啟動開發伺服器**
+```bash
+npm start
+```
+
+### **執行測試**
+```bash
+npm test
+```
+
+---
+
+## **進度與待辦事項**
+### **目前完成**
+- 基本的資料表管理功能。
+- 導航與佈局的基礎設計。
+
+### **待辦事項**
+- 儀表板的初步視覺化功能。
+- 儀表板的進一步功能擴展。
+- 完善的 API 整合。
+- 資料表的更多操作（如匯出功能）。
+- 優化 UI/UX 設計。
+- 撰寫完整的使用者文件。
+
+---
+
+## **貢獻指南**
+歡迎任何形式的貢獻！請遵循以下步驟：
+1. Fork 此倉庫。
+2. 創建分支進行修改（`git checkout -b feature/your-feature`）。
+3. 提交 PR（Pull Request）。
+
+---
+
+## **版權聲明**
+此專案採用 [MIT License](LICENSE)。請自由使用、修改與分發。
+
+---
+
+如果有任何問題或建議，請開 Issue 或聯繫我們！🎉
