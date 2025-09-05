@@ -1,6 +1,6 @@
 // src/components/layout/TopNav.tsx
 import { useState } from "react";
-import { Box, IconButton, Modal, TextField, Typography } from "@mui/material";
+import { Box, IconButton, Modal, TextField } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { Breadcrumb } from "./Breadcrumb";
 import { useTheme } from "@mui/material/styles";
