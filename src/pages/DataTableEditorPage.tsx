@@ -20,9 +20,11 @@ import {
   Grid,
   Button,
 } from "@mui/material";
-import { Edit as EditIcon } from "@mui/icons-material";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import CancelIcon from "@mui/icons-material/Cancel";
+import {
+  Edit as EditIcon,
+  Cancel as CancelIcon,
+  CheckCircleOutline as CheckCircleOutlineIcon,
+} from "@mui/icons-material";
 import { PageWrapper } from "../components/layout/PageWrapper";
 import { parseDataFile } from "../utils";
 import type { ParsedData } from "../types";
@@ -35,6 +37,10 @@ export const DataTableEditorPage = () => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<ParsedData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [editingCell, setEditingCell] = useState<{
+    rowIndex: number;
+    colIndex: number;
+  } | null>(null);
 
   const [tableName, setTableName] = useState<string>(
     file?.name.split(".")[0] || "未命名表格"
@@ -65,12 +71,27 @@ export const DataTableEditorPage = () => {
   const handleConfirm = () => {
     console.log(`確認並儲存表格: ${tableName}`);
     // 這裡可以加入儲存資料到後端的邏輯
-    navigate("/data-tables"); // 儲存後導航回列表頁
+    navigate("/data-tables");
   };
 
   const handleCancel = () => {
     console.log("取消編輯");
-    navigate("/data-tables"); // 取消後導航回列表頁
+    navigate("/data-tables");
+  };
+
+  const handleCellClick = (rowIndex: number, colIndex: number) => {
+    setEditingCell({ rowIndex, colIndex });
+  };
+
+  const handleCellChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    rowIndex: number,
+    colIndex: number
+  ) => {
+    if (!data) return;
+    const newData = { ...data };
+    newData.rows[rowIndex][colIndex] = e.target.value;
+    setData(newData);
   };
 
   const pageConfig = {
@@ -87,64 +108,74 @@ export const DataTableEditorPage = () => {
           sx={{ mb: 2 }}
         >
           {/* 標題區塊 */}
-          <Grid size="grow">
-            <Box sx={{ display: "flex", alignItems: "center" }}>
-              <Typography variant="h4" sx={{ mr: 1, fontWeight: "bold" }}>
-                表格名稱
-              </Typography>
-              {isEditingName ? (
-                <TextField
-                  value={tableName}
-                  onChange={(e) => setTableName(e.target.value)}
-                  onBlur={() => setIsEditingName(false)}
-                  autoFocus
-                  variant="standard"
-                  slotProps={{
-                    input: {
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <EditIcon fontSize="small" />
-                        </InputAdornment>
-                      ),
-                    },
-                  }}
-                />
-              ) : (
-                <Tooltip title="點擊編輯表格名稱">
-                  <Box
-                    onClick={() => setIsEditingName(true)}
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      cursor: "pointer",
-                      "&:hover": {
-                        "& .MuiTypography-root": {
-                          color: "primary.main",
-                          textDecoration: "underline",
-                        },
-                        "& .MuiSvgIcon-root": {
-                          color: "primary.main",
-                        },
+          {!error ? (
+            <Grid size="grow">
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <Typography variant="h4" sx={{ mr: 1, fontWeight: "bold" }}>
+                  表格名稱
+                </Typography>
+                {isEditingName ? (
+                  <TextField
+                    value={tableName}
+                    onChange={(e) => setTableName(e.target.value)}
+                    onBlur={() => setIsEditingName(false)}
+                    autoFocus
+                    variant="standard"
+                    slotProps={{
+                      input: {
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <EditIcon fontSize="small" />
+                          </InputAdornment>
+                        ),
                       },
                     }}
-                  >
-                    <Typography
-                      variant="h4"
-                      component="span"
-                      sx={{ fontWeight: "bold" }}
+                  />
+                ) : (
+                  <Tooltip title="點擊編輯表格名稱">
+                    <Box
+                      onClick={() => setIsEditingName(true)}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        cursor: "pointer",
+                        "&:hover": {
+                          "& .MuiTypography-root": {
+                            color: "primary.main",
+                            textDecoration: "underline",
+                          },
+                          "& .MuiSvgIcon-root": {
+                            color: "primary.main",
+                          },
+                        },
+                      }}
                     >
-                      {tableName}
-                    </Typography>
-                    <IconButton size="small" sx={{ ml: 0.5 }}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                  </Box>
-                </Tooltip>
-              )}
-            </Box>
-          </Grid>
+                      <Typography
+                        variant="h4"
+                        component="span"
+                        sx={{ fontWeight: "bold" }}
+                      >
+                        {tableName}
+                      </Typography>
+                      <IconButton size="small" sx={{ ml: 0.5 }}>
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  </Tooltip>
+                )}
+              </Box>
+            </Grid>
+          ) : (
+            <Grid size="grow">
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <Typography variant="h4" sx={{ mr: 1, fontWeight: "bold" }}>
+                  無檔案資料
+                </Typography>
+              </Box>
+            </Grid>
+          )}
 
-          {/* 新增：確認與取消按鈕 */}
+          {/* 確認與取消按鈕 */}
           <Grid>
             <Button
               variant="outlined"
@@ -154,13 +185,15 @@ export const DataTableEditorPage = () => {
             >
               取消
             </Button>
-            <Button
-              variant="contained"
-              startIcon={<CheckCircleOutlineIcon />}
-              onClick={handleConfirm}
-            >
-              確認
-            </Button>
+            {!error && (
+              <Button
+                variant="contained"
+                startIcon={<CheckCircleOutlineIcon />}
+                onClick={handleConfirm}
+              >
+                確認
+              </Button>
+            )}
           </Grid>
         </Grid>
 
@@ -177,11 +210,21 @@ export const DataTableEditorPage = () => {
               component={Paper}
               sx={{ height: "70vh", overflow: "auto" }}
             >
-              <Table stickyHeader size="small">
+              <Table stickyHeader size="small" sx={{ minWidth: 650 }}>
                 <TableHead>
                   <TableRow>
                     {data.headers.map((header) => (
-                      <TableCell key={header} sx={{ fontWeight: "bold" }}>
+                      <TableCell
+                        key={header}
+                        sx={{
+                          fontWeight: "bold",
+                          minWidth: "150px", // 設定最小寬度，避免內容過少時擠壓
+                          maxWidth: "250px", // 設定最大寬度
+                          overflow: "hidden",
+                          textOverflow: "ellipsis", // 內容過長時顯示省略號
+                          whiteSpace: "nowrap", // 阻止自動換行
+                        }}
+                      >
                         {header}
                       </TableCell>
                     ))}
@@ -191,7 +234,43 @@ export const DataTableEditorPage = () => {
                   {data.rows.map((row, rowIndex) => (
                     <TableRow key={rowIndex}>
                       {row.map((cell, cellIndex) => (
-                        <TableCell key={cellIndex}>{cell}</TableCell>
+                        <TableCell
+                          key={cellIndex}
+                          onClick={() => handleCellClick(rowIndex, cellIndex)}
+                          sx={{
+                            minWidth: "150px",
+                            maxWidth: "250px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {editingCell?.rowIndex === rowIndex &&
+                          editingCell?.colIndex === cellIndex ? (
+                            <TextField
+                              value={cell}
+                              onChange={(e) =>
+                                handleCellChange(e, rowIndex, cellIndex)
+                              }
+                              onBlur={() => setEditingCell(null)}
+                              autoFocus
+                              variant="standard"
+                              size="small"
+                              sx={{
+                                width: "100%",
+                                "& .MuiInputBase-root": {
+                                  // 移除輸入框內部樣式
+                                  padding: 0,
+                                },
+                              }}
+                            />
+                          ) : (
+                            // 新增 Tooltip 處理單元格內容過長
+                            <Tooltip title={cell}>
+                              <Typography component="span">{cell}</Typography>
+                            </Tooltip>
+                          )}
+                        </TableCell>
                       ))}
                     </TableRow>
                   ))}
