@@ -28,6 +28,7 @@ import {
 import { PageWrapper } from "../components/layout/PageWrapper";
 import { parseDataFile } from "../utils";
 import type { ParsedData } from "../types";
+import EditableCell from "../components/common/EditableCell";
 
 export const DataTableEditorPage = () => {
   const location = useLocation();
@@ -42,10 +43,6 @@ export const DataTableEditorPage = () => {
     file?.name.split(".")[0] || "未命名表格"
   );
   const [isEditingName, setIsEditingName] = useState(false);
-  const [editingCell, setEditingCell] = useState<{
-    rowIndex: number;
-    colIndex: number;
-  } | null>(null);
 
   useEffect(() => {
     const processFile = async () => {
@@ -77,10 +74,6 @@ export const DataTableEditorPage = () => {
   const handleCancel = () => {
     console.log("取消編輯");
     navigate("/data-tables");
-  };
-
-  const handleCellClick = (rowIndex: number, colIndex: number) => {
-    setEditingCell({ rowIndex, colIndex });
   };
 
   const handleCellChange = (
@@ -234,41 +227,13 @@ export const DataTableEditorPage = () => {
                   {data.rows.map((row, rowIndex) => (
                     <TableRow key={rowIndex}>
                       {row.map((cell, cellIndex) => (
-                        <TableCell
+                        <EditableCell
                           key={cellIndex}
-                          onClick={() => handleCellClick(rowIndex, cellIndex)}
-                          sx={{
-                            minWidth: "150px",
-                            maxWidth: "250px",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {editingCell?.rowIndex === rowIndex &&
-                          editingCell?.colIndex === cellIndex ? (
-                            <TextField
-                              value={cell}
-                              onChange={(e) =>
-                                handleCellChange(e, rowIndex, cellIndex)
-                              }
-                              onBlur={() => setEditingCell(null)}
-                              autoFocus
-                              variant="standard"
-                              size="small"
-                              sx={{
-                                width: "100%",
-                                "& .MuiInputBase-root": {
-                                  padding: 0,
-                                },
-                              }}
-                            />
-                          ) : (
-                            <Tooltip title={cell}>
-                              <Typography component="span">{cell}</Typography>
-                            </Tooltip>
-                          )}
-                        </TableCell>
+                          rowIndex={rowIndex}
+                          colIndex={cellIndex}
+                          value={cell}
+                          onChange={handleCellChange}
+                        />
                       ))}
                     </TableRow>
                   ))}
