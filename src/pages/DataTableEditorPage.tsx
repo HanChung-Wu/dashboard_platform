@@ -37,15 +37,15 @@ export const DataTableEditorPage = () => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<ParsedData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [editingCell, setEditingCell] = useState<{
-    rowIndex: number;
-    colIndex: number;
-  } | null>(null);
 
   const [tableName, setTableName] = useState<string>(
     file?.name.split(".")[0] || "未命名表格"
   );
   const [isEditingName, setIsEditingName] = useState(false);
+  const [editingCell, setEditingCell] = useState<{
+    rowIndex: number;
+    colIndex: number;
+  } | null>(null);
 
   useEffect(() => {
     const processFile = async () => {
@@ -208,9 +208,9 @@ export const DataTableEditorPage = () => {
             {/* 修正：stickyHeader overflow 屬性 須配合高度 */}
             <TableContainer
               component={Paper}
-              sx={{ height: "70vh", overflow: "auto" }}
+              sx={{ width: "67vw", height: "72vh", overflow: "auto" }}
             >
-              <Table stickyHeader size="small" sx={{ minWidth: 650 }}>
+              <Table stickyHeader size="small">
                 <TableHead>
                   <TableRow>
                     {data.headers.map((header) => (
@@ -259,13 +259,11 @@ export const DataTableEditorPage = () => {
                               sx={{
                                 width: "100%",
                                 "& .MuiInputBase-root": {
-                                  // 移除輸入框內部樣式
                                   padding: 0,
                                 },
                               }}
                             />
                           ) : (
-                            // 新增 Tooltip 處理單元格內容過長
                             <Tooltip title={cell}>
                               <Typography component="span">{cell}</Typography>
                             </Tooltip>
