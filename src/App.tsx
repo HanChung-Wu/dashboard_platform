@@ -1,5 +1,5 @@
 // src/App.tsx
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route } from "react-router-dom";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { LayoutProvider } from "./context/LayoutProvider";
 import { Layout } from "./components/layout/Layout";
@@ -21,7 +21,7 @@ function App() {
     throw Error("App should only render on the client.");
   }
   return (
-    <BrowserRouter>
+    <HashRouter>
       <ThemeProvider theme={theme}>
         {/* CssBaseline 提供了簡潔、一致的 CSS 基礎 */}
         <CssBaseline />
@@ -46,7 +46,7 @@ function App() {
           </Routes>
         </LayoutProvider>
       </ThemeProvider>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
