@@ -17,6 +17,9 @@ import { DataTablesPage } from "./pages/DataTablesPage";
 import theme from "./theme";
 
 function App() {
+  if (typeof window === "undefined") {
+    throw Error("App should only render on the client.");
+  }
   return (
     <BrowserRouter>
       <ThemeProvider theme={theme}>
