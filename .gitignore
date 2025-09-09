@@ -26,6 +26,7 @@ dist-ssr
 *.sw?
 
 # Database
+data/*
 *.sqlite
 *.sqlite3
 *.db
