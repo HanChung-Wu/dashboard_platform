@@ -25,6 +25,12 @@ dist-ssr
 *.sln
 *.sw?
 
+# Database
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+
 # Environment variables
 .env
 .env.test
