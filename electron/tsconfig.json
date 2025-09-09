@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    // tell TypeScript to generate ESM Syntax
+    "target": "ES2023",
+    // tell TypeScript to require ESM Syntax as input (including .js file imports)
+    "module": "nodenext",
+    // define where to put generated JS
+    "outDir": "../dist-electron",
+    // ignore errors from dependencies
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "nodenext",
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+
+    /* Linting */
+    // require strict types (null-save)
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
+  }
+}
