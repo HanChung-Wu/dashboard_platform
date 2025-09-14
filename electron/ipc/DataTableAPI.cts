@@ -1,16 +1,13 @@
 import { ipcMain } from "electron";
 import { FileManager } from "../models/FileManager.cjs";
 import { DatabaseManager } from "../models/DatabaseManager.cjs";
-import path from "path";
-import fs from "fs";
-import { userDataPath } from "../constants.cjs";
+
 export const DataTableAPI = {
   init: () => {
     // 上傳資料表格
     ipcMain.handle("upload-table", (_event, { tableInfo, content }) => {
       const { name, description } = tableInfo;
-      const directory = path.join(userDataPath, "tables");
-      if (!fs.existsSync(directory)) fs.mkdirSync(directory);
+      const directory = FileManager.getUserDataPath("tables");
 
       const fileName = `${Date.now()}_${name}.json`;
       const filePath = FileManager.saveFile(directory, fileName, content);

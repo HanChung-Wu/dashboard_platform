@@ -1,29 +1,28 @@
 import { ipcMain } from "electron";
 import { FileManager } from "../models/FileManager.cjs";
 import { DatabaseManager } from "../models/DatabaseManager.cjs";
-import path from "path";
-import fs from "fs";
-import { userDataPath } from "../constants.cjs";
 
 export const ChartAPI = {
   init: () => {
     // 上傳圖表設定檔
     ipcMain.handle("upload-chart", (_event, { chartInfo, config }) => {
       const { name, description } = chartInfo;
-      const directory = path.join(userDataPath, "charts");
-      const chartDirectory = path.join(directory, `${Date.now()}_${name}`);
-      if (!fs.existsSync(directory)) fs.mkdirSync(directory);
-      if (!fs.existsSync(chartDirectory)) fs.mkdirSync(chartDirectory);
+      const chartDirectory = FileManager.getUserDataPath(
+        "charts",
+        `${Date.now()}_${name}`
+      );
+      FileManager.ensureDirectory(chartDirectory);
 
       const configPath = FileManager.saveFile(
         chartDirectory,
         "config.json",
         config
       );
-      const previewPath = path.join(chartDirectory, "preview.png");
-
-      // 預覽圖由程序生成，這裡僅占位
-      fs.writeFileSync(previewPath, ""); // 空檔案占位
+      const previewPath = FileManager.saveFile(
+        chartDirectory,
+        "preview.png",
+        ""
+      ); // 空檔案占位
 
       DatabaseManager.run(
         "INSERT INTO charts (name, description, config_path, preview_path) VALUES (?, ?, ?, ?)",
