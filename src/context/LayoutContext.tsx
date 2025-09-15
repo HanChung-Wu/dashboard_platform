@@ -2,7 +2,7 @@
 import { createContext } from "react";
 import type { LayoutState } from "../stores/layoutStore";
 
-interface LayoutContextType extends LayoutState {
+export interface LayoutContextType extends LayoutState {
   toggleRightPanelEnabled: () => void;
 }
 
