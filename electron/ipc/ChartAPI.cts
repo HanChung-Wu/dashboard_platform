@@ -1,6 +1,6 @@
 import { ipcMain } from "electron";
 import { FileManager } from "../models/FileManager.cjs";
-import { DatabaseManager } from "../models/DatabaseManager.cjs";
+import { ChartManager } from "../models/ChartManager.cjs";
 
 export const ChartAPI = {
   init: () => {
@@ -24,25 +24,24 @@ export const ChartAPI = {
         ""
       ); // 空檔案占位
 
-      DatabaseManager.run(
-        "INSERT INTO charts (name, description, config_path, preview_path) VALUES (?, ?, ?, ?)",
-        [name, description, configPath, previewPath]
-      );
+      ChartManager.addChart({
+        name,
+        description,
+        config_path: configPath,
+        preview_path: previewPath,
+      });
 
       return { name, description, configPath, previewPath };
     });
 
     // 刪除圖表
     ipcMain.handle("delete-chart", (_event, id) => {
-      const chart = DatabaseManager.get<{
-        config_path: string;
-        preview_path: string;
-      }>("SELECT config_path, preview_path FROM charts WHERE id = ?", [id]);
+      const chart = ChartManager.getChartById(id);
       if (!chart) throw new Error("圖表不存在");
 
       FileManager.deleteFile(chart.config_path);
-      FileManager.deleteFile(chart.preview_path);
-      DatabaseManager.run("DELETE FROM charts WHERE id = ?", [id]);
+      if (chart.preview_path) FileManager.deleteFile(chart.preview_path);
+      ChartManager.deleteChart(id);
 
       return { message: "圖表已刪除" };
     });

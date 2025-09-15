@@ -1,6 +1,6 @@
 import { ipcMain } from "electron";
 import { FileManager } from "../models/FileManager.cjs";
-import { DatabaseManager } from "../models/DatabaseManager.cjs";
+import { DataTableManager } from "../models/DataTableManager.cjs";
 
 export const DataTableAPI = {
   init: () => {
@@ -12,29 +12,25 @@ export const DataTableAPI = {
       const fileName = `${Date.now()}_${name}.json`;
       const filePath = FileManager.saveFile(directory, fileName, content);
 
-      DatabaseManager.run(
-        "INSERT INTO tables (name, description, file_path) VALUES (?, ?, ?)",
-        [name, description, filePath]
-      );
-
-      return { name, description, filePath };
+      return DataTableManager.addTableInfo({
+        name,
+        description,
+        file_path: filePath,
+      });
     });
 
     // 獲取所有資料表格
     ipcMain.handle("get-tables", () => {
-      return DatabaseManager.query("SELECT * FROM tables");
+      return DataTableManager.getAllTableInfos();
     });
 
     // 刪除資料表格
     ipcMain.handle("delete-table", (_event, id) => {
-      const table = DatabaseManager.get<{ file_path: string }>(
-        "SELECT file_path FROM tables WHERE id = ?",
-        [id]
-      );
+      const table = DataTableManager.getTableInfoById(id);
       if (!table) throw new Error("資料表不存在");
 
       FileManager.deleteFile(table.file_path);
-      DatabaseManager.run("DELETE FROM tables WHERE id = ?", [id]);
+      DataTableManager.deleteTableInfo(id);
 
       return { message: "資料表已刪除" };
     });

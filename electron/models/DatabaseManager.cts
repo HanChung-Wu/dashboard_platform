@@ -3,6 +3,7 @@ import Database, {
   type Statement,
   type RunResult,
 } from "better-sqlite3";
+import { databasePath } from "../constants.cjs";
 
 // 資料庫交互模組
 export const DatabaseManager = {
@@ -25,7 +26,7 @@ export const DatabaseManager = {
    * @param params 綁定的查詢參數
    * @returns 查詢結果（陣列形式）
    */
-  query<T = unknown>(sql: string, params: unknown[] = []): T[] {
+  all<T = unknown>(sql: string, params: unknown[] = []): T[] {
     if (!DatabaseManager.db) throw new Error("資料庫尚未初始化");
     const stmt: Statement<unknown[], T> = DatabaseManager.db.prepare(sql);
     return stmt.all(...params);
@@ -55,3 +56,4 @@ export const DatabaseManager = {
     return stmt.run(...params);
   },
 };
+DatabaseManager.init(databasePath);
