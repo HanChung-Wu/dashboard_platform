@@ -1,6 +1,10 @@
 {
   "appId": "com.github.jackwu.dashboard_platform",
-  "files": ["dist-electron", "dist-react"],
+  "files": [
+    "dist-electron",
+    "dist-react",
+    "public"
+  ],
   "icon": "public/icon.ico",
   "mac": {
     "target": "dmg"
@@ -10,6 +14,9 @@
     "category": "Utility"
   },
   "win": {
-    "target": ["portable", "msi"]
+    "target": [
+      "portable",
+      "msi"
+    ]
   }
 }
