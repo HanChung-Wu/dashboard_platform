@@ -41,7 +41,7 @@ export const FileManager = {
       throw new Error(`檔案不存在: ${filePath}`);
     }
     const content = fs.readFileSync(filePath, "utf-8");
-    return JSON.parse(content);
+    return content;
   },
 
   // 刪除檔案
