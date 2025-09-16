@@ -13,6 +13,7 @@ import { useTableEditor } from "../hooks/useTableEditor";
 export const DataTableEditorPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const tableId: number | undefined = location.state?.tableId;
   const file: File | null = location.state?.file || null;
 
   // 使用自定義 hooks
@@ -29,14 +30,43 @@ export const DataTableEditorPage: React.FC = () => {
 
   // 當解析完成時更新資料
   useEffect(() => {
-    if (parsedData) {
+    if (tableId) {
+      // 若有 id，從後端載入
+      window.api.getTable(tableId).then((res) => {
+        setTableName(res.info.name);
+        updateData(res.data); // 假設 rows 是表格的資料列
+      });
+    } else if (parsedData) {
+      // 否則從上傳的檔案解析
       updateData(parsedData);
     }
-  }, [parsedData, updateData]);
+  }, [parsedData, updateData, tableId, setTableName]);
 
-  const handleConfirm = () => {
-    console.log(`確認並儲存表格: ${tableName}`);
-    // 這裡可以加入儲存資料到後端的邏輯
+  const handleConfirm = async () => {
+    if (!data) return;
+    if (!tableName.trim()) {
+      alert("請輸入表格名稱");
+      return;
+    }
+    if (error) {
+      alert("無法儲存有錯誤的表格");
+      return;
+    }
+    if (tableId) {
+      console.log(`確認並更新表格: ${tableName}`);
+      const dataTableWithInfo = await window.api.updateTable(
+        tableId,
+        tableName,
+        data
+      );
+      console.log("更新成功:", dataTableWithInfo);
+    } else {
+      console.log(`確認並儲存表格: ${tableName}`);
+      // 這裡可以加入儲存資料到後端的邏輯
+      const tableInfo = { name: tableName, description: "" };
+      const dataTableInfo = await window.api.uploadTable(tableInfo, data);
+      console.log("儲存成功:", dataTableInfo);
+    }
     navigate("/data-tables");
   };
 

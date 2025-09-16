@@ -1,28 +1,28 @@
 // src/hooks/useTableEditor.ts
 import { useState, useCallback } from "react";
-import type { ParsedData } from "shared/types";
+import type { DataTableHeaderSchema } from "shared/types/dataTable";
 
 interface UseTableEditorReturn {
   tableName: string;
   setTableName: (name: string) => void;
   isEditingName: boolean;
   setIsEditingName: (editing: boolean) => void;
-  data: ParsedData | null;
+  data: DataTableHeaderSchema | null;
   handleCellChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     rowIndex: number,
     colIndex: number
   ) => void;
-  updateData: (newData: ParsedData | null) => void;
+  updateData: (newData: DataTableHeaderSchema | null) => void;
 }
 
 export const useTableEditor = (
-  initialData: ParsedData | null,
+  initialData: DataTableHeaderSchema | null,
   initialTableName: string
 ): UseTableEditorReturn => {
   const [tableName, setTableName] = useState(initialTableName);
   const [isEditingName, setIsEditingName] = useState(false);
-  const [data, setData] = useState<ParsedData | null>(initialData);
+  const [data, setData] = useState<DataTableHeaderSchema | null>(initialData);
 
   const handleCellChange = useCallback(
     (
@@ -39,7 +39,7 @@ export const useTableEditor = (
     [data]
   );
 
-  const updateData = useCallback((newData: ParsedData | null) => {
+  const updateData = useCallback((newData: DataTableHeaderSchema | null) => {
     setData(newData);
   }, []);
 

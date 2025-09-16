@@ -1,5 +1,5 @@
 // src/pages/DataTablesPage.tsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -16,42 +16,23 @@ import { PageWrapper } from "../components/layout/PageWrapper";
 import type { PageConfig } from "../types";
 import { DataTableList } from "../components/DataTablesPage/DataTableList";
 import { UploadDataTableDialog } from "../components/DataTablesPage/UploadDataTableDialog";
-
-// 假資料，用於模擬從後端獲取的資料
-const fakeDataTableInfos = [
-  {
-    id: "1",
-    name: "銷售數據",
-    file_path: "ttt.ss.ddf",
-    created_at: "2023-10-26",
-    updated_at: "2023-10-26",
-    fileSize: "1.2 MB",
-  },
-  {
-    id: "2",
-    name: "客戶資訊",
-    file_path: "ttt.ss.ddf",
-    created_at: "2023-10-25",
-    updated_at: "2023-10-25",
-    fileSize: "800 KB",
-  },
-  {
-    id: "3",
-    name: "庫存報表",
-    file_path: "ttt.ss.ddf",
-    created_at: "2023-10-24",
-    updated_at: "2023-10-24",
-    fileSize: "3.5 MB",
-  },
-];
+import type { DataTableInfo } from "shared/types/dataTable";
 
 export const DataTablesPage = () => {
   const [searchText, setSearchText] = useState("");
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"card" | "list">("card");
+  const [tableInfos, setTableInfos] = useState<DataTableInfo[]>([]); // 真正從後端來的資料
+
+  useEffect(() => {
+    // 載入後端資料表資訊
+    window.api.getAllTableInfos().then((tables) => {
+      setTableInfos(tables);
+    });
+  }, []);
 
   // 根據搜尋關鍵字過濾資料
-  const filteredDataTables = fakeDataTableInfos.filter((table) =>
+  const filteredDataTables = tableInfos.filter((table) =>
     table.name.toLowerCase().includes(searchText.toLowerCase())
   );
 

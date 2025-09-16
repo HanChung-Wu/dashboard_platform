@@ -74,6 +74,7 @@ export const UploadDataTableDialog = ({ open, onClose }: Props) => {
         navigate("/data-tables/edit", { state: { file: selectedFiles[0] } });
       } else {
         console.log("多個檔案上傳，返回資料表格列表頁...");
+        // TODO : 多檔案上傳後的處理邏輯
         setSelectedFiles([]);
       }
     }, 2000);

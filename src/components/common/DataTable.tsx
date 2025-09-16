@@ -12,10 +12,10 @@ import {
   Paper,
 } from "@mui/material";
 import EditableCell from "./EditableCell";
-import type { ParsedData } from "shared/types";
+import type { DataTableHeaderSchema } from "shared/types/dataTable";
 
 interface DataTableProps {
-  data: ParsedData;
+  data: DataTableHeaderSchema;
   onCellChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     rowIndex: number,
@@ -69,7 +69,7 @@ const DataTable: React.FC<DataTableProps> = ({
                     key={cellIndex}
                     rowIndex={rowIndex}
                     colIndex={cellIndex}
-                    value={cell}
+                    value={String(cell)}
                     onChange={onCellChange}
                   />
                 ))}

@@ -1,13 +1,13 @@
 // src/utils.tsx
 import Papa from "papaparse";
-import type { ParsedData } from "shared/types";
+import type { DataTableHeaderSchema } from "shared/types/dataTable";
 
 // 針對 PapaParse 的資料，定義一個更精確的型別
 interface PapaResultRow {
   [key: string]: string | number;
 }
 
-export const parseDataFile = (file: File): Promise<ParsedData> => {
+export const parseDataFile = (file: File): Promise<DataTableHeaderSchema> => {
   return new Promise((resolve, reject) => {
     if (file.type === "text/csv") {
       // 在 PapaParse 的 .parse 方法中，使用泛型來指定資料型別
