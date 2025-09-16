@@ -17,10 +17,14 @@ export interface DataTableInfo {
 }
 
 export type DataType = string | number | boolean | null | undefined;
-export type DataRow = Record<string, DataType>;
-export type DataTable = DataRow[];
-
+export type DataRecord = Record<string, DataType>;
+export type DataRow = DataType[];
+export type DataTableRecordSchema = DataRecord[];
+export interface DataTableHeaderSchema {
+  headers: string[];
+  rows: DataRow[];
+}
 export interface DataTableWithInfo {
   info: DataTableInfo;
-  data: DataTable;
+  data: DataTableHeaderSchema;
 }

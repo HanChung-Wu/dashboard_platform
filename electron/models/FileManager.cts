@@ -34,6 +34,9 @@ export const FileManager = {
     fs.writeFileSync(filePath, JSON.stringify(content));
     return filePath;
   },
+  saveFileWithPath: (filePath: string, content: unknown) => {
+    fs.writeFileSync(filePath, JSON.stringify(content));
+  },
 
   // 讀取檔案
   readFile: (filePath: string) => {
@@ -56,5 +59,8 @@ export const FileManager = {
     const filePath = path.join(directory, fileName);
     fs.writeFileSync(filePath, imageBuffer);
     return filePath;
+  },
+  saveImageWithPath: (filePath: string, imageBuffer: Buffer) => {
+    fs.writeFileSync(filePath, imageBuffer);
   },
 };

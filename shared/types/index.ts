@@ -1,8 +1,6 @@
-export interface ParsedData {
-  headers: string[];
-  rows: (string | number)[][];
+export interface Message {
+  message: string;
 }
-
 export type Result<T, E> = Ok<T, E> | Err<T, E>;
 export class Ok<T, _> {
   readonly type = "ok" as const;
