@@ -23,13 +23,18 @@ export const DataTablesPage = () => {
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"card" | "list">("card");
   const [tableInfos, setTableInfos] = useState<DataTableInfo[]>([]); // 真正從後端來的資料
+  console.log("DataTablesPage");
 
   useEffect(() => {
     // 載入後端資料表資訊
+    refreshTableInfos();
+  }, []);
+
+  const refreshTableInfos = () => {
     window.api.getAllTableInfos().then((tables) => {
       setTableInfos(tables);
     });
-  }, []);
+  };
 
   // 根據搜尋關鍵字過濾資料
   const filteredDataTables = tableInfos.filter((table) =>
@@ -111,7 +116,11 @@ export const DataTablesPage = () => {
         </Grid>
 
         {/* 將 viewMode 作為 props 傳遞給 DataTableList */}
-        <DataTableList dataTables={filteredDataTables} viewMode={viewMode} />
+        <DataTableList
+          dataTables={filteredDataTables}
+          viewMode={viewMode}
+          refreshTableInfos={refreshTableInfos}
+        />
 
         {/* 上傳資料表格對話框 */}
         <UploadDataTableDialog

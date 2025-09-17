@@ -19,20 +19,29 @@ import {
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useState } from "react";
 import type { DataTableInfo } from "shared/types/dataTable";
+import { DeleteWarningDialog } from "../common/DeleteWarningDialog";
 
 interface Props {
   dataTables: DataTableInfo[];
   // 新增 viewMode 屬性
   viewMode: "card" | "list";
+  refreshTableInfos: () => void;
 }
 
-export const DataTableList = ({ dataTables, viewMode }: Props) => {
+export const DataTableList = ({
+  dataTables,
+  viewMode,
+  refreshTableInfos,
+}: Props) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
+  const [selectedTableId, setSelectedTableId] = useState<
+    string | number | null
+  >(null);
+  const [openDialog, setOpenDialog] = useState(false);
 
   const handleMenuClick = (
     event: React.MouseEvent<HTMLElement>,
-    tableId: string
+    tableId: string | number
   ) => {
     setAnchorEl(event.currentTarget);
     setSelectedTableId(tableId);
@@ -46,6 +55,22 @@ export const DataTableList = ({ dataTables, viewMode }: Props) => {
   const handleAction = (action: string) => {
     console.log(`對表格 ${selectedTableId} 執行操作: ${action}`);
     handleMenuClose();
+  };
+
+  const closeDeleteDialog = () => {
+    setOpenDialog(false);
+    handleMenuClose();
+  };
+  const openDeleteDialog = () => {
+    setOpenDialog(true);
+    setAnchorEl(null);
+  };
+  const handleConfirmDelete = () => {
+    console.log(`刪除表格 ${selectedTableId}`);
+    window.api.deleteTable(selectedTableId!);
+    setOpenDialog(false);
+    handleMenuClose();
+    refreshTableInfos();
   };
 
   // 渲染列表的 Helper 函式
@@ -135,7 +160,6 @@ export const DataTableList = ({ dataTables, viewMode }: Props) => {
       ) : (
         <>{viewMode === "card" ? renderCards() : renderList()}</>
       )}
-
       {/* 單一表格操作選單 (保持不變) */}
       <Menu
         anchorEl={anchorEl}
@@ -146,8 +170,15 @@ export const DataTableList = ({ dataTables, viewMode }: Props) => {
         <MenuItem onClick={() => handleAction("編輯")}>編輯</MenuItem>
         <MenuItem onClick={() => handleAction("更新")}>更新</MenuItem>
         <MenuItem onClick={() => handleAction("下載")}>下載</MenuItem>
-        <MenuItem onClick={() => handleAction("刪除")}>刪除</MenuItem>
+        <MenuItem onClick={() => openDeleteDialog()}>刪除</MenuItem>
       </Menu>
+      <DeleteWarningDialog
+        title="刪除資料表格"
+        content="確定要刪除這個資料表格嗎？此操作無法復原。"
+        open={openDialog}
+        handleClose={closeDeleteDialog}
+        handleComfirm={handleConfirmDelete}
+      />
     </Box>
   );
 };

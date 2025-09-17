@@ -12,10 +12,10 @@ interface DataTableAPI {
     content: DataTableHeaderSchema
   ) => Promise<DataTableInfo>;
   getAllTableInfos: () => Promise<DataTableInfo[]>;
-  getTable: (id: number) => Promise<DataTableWithInfo>;
-  deleteTable: (id: number) => Promise<Message>;
+  getTable: (id: string | number) => Promise<DataTableWithInfo>;
+  deleteTable: (id: string | number) => Promise<Message>;
   updateTable: (
-    id: number,
+    id: string | number,
     name: string,
     data: DataTableHeaderSchema
   ) => Promise<DataTableWithInfo>;

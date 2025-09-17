@@ -1,5 +1,5 @@
 // src/pages/DataTableEditorPage.tsx
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Box, Typography, CircularProgress, Alert } from "@mui/material";
 import { PageWrapper } from "../components/layout/PageWrapper";
@@ -15,6 +15,7 @@ export const DataTableEditorPage: React.FC = () => {
   const navigate = useNavigate();
   const tableId: number | undefined = location.state?.tableId;
   const file: File | null = location.state?.file || null;
+  const [disabled, setDisabled] = useState(false);
 
   // 使用自定義 hooks
   const { loading, data: parsedData, error } = useFileParser(file);
@@ -28,6 +29,7 @@ export const DataTableEditorPage: React.FC = () => {
     updateData,
   } = useTableEditor(null, file?.name.split(".")[0] || "未命名表格");
 
+  console.log("DataTableEditorPage:", location.state, parsedData);
   // 當解析完成時更新資料
   useEffect(() => {
     if (tableId) {
@@ -40,7 +42,17 @@ export const DataTableEditorPage: React.FC = () => {
       // 否則從上傳的檔案解析
       updateData(parsedData);
     }
-  }, [parsedData, updateData, tableId, setTableName]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tableId, parsedData]);
+
+  const handleTitleChange = (title: string) => {
+    setTableName(title);
+    if (!title.trim()) {
+      setDisabled(true);
+    } else {
+      setDisabled(false);
+    }
+  };
 
   const handleConfirm = async () => {
     if (!data) return;
@@ -97,7 +109,7 @@ export const DataTableEditorPage: React.FC = () => {
     return (
       <EditableTitle
         title={tableName}
-        onTitleChange={setTableName}
+        onTitleChange={handleTitleChange}
         isEditing={isEditingName}
         onEditingChange={setIsEditingName}
         label="表格名稱"
@@ -120,6 +132,7 @@ export const DataTableEditorPage: React.FC = () => {
               onConfirm={handleConfirm}
               onCancel={handleCancel}
               showConfirm={!error}
+              disabled={disabled || loading || !!error || !data}
             />
           }
         />
