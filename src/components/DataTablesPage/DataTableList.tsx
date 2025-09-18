@@ -183,8 +183,6 @@ export const DataTableList = ({
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
       >
-        <MenuItem onClick={() => handleAction("瀏覽")}>瀏覽</MenuItem>
-        <MenuItem onClick={() => handleAction("編輯")}>編輯</MenuItem>
         <MenuItem onClick={() => handleAction("更新")}>更新</MenuItem>
         <MenuItem onClick={() => handleAction("下載")}>下載</MenuItem>
         <MenuItem onClick={() => openDeleteDialog()}>刪除</MenuItem>
