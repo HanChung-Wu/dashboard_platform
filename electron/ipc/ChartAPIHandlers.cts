@@ -23,14 +23,12 @@ export const ChartAPIHandlers: Record<string, IpcMainListener> = {
     );
     const previewPath = FileManager.saveFile(chartDirectory, "preview.png", ""); // 空檔案占位
 
-    ChartManager.addChart({
+    return ChartManager.addChart({
       name,
       description,
       config_path: configPath,
       preview_path: previewPath,
     });
-
-    return { name, description, configPath, previewPath };
   },
   // 刪除圖表
   "delete-chart": (_event, id: number) => {

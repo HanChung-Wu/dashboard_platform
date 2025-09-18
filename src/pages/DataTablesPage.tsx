@@ -1,5 +1,6 @@
 // src/pages/DataTablesPage.tsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -11,47 +12,35 @@ import {
 } from "@mui/material";
 import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
 import AddIcon from "@mui/icons-material/Add";
+import UploadIcon from "@mui/icons-material/Upload";
 import GridViewIcon from "@mui/icons-material/GridView";
 import { PageWrapper } from "../components/layout/PageWrapper";
-import type { PageConfig } from "../types";
 import { DataTableList } from "../components/DataTablesPage/DataTableList";
 import { UploadDataTableDialog } from "../components/DataTablesPage/UploadDataTableDialog";
-
-// 假資料，用於模擬從後端獲取的資料
-const fakeDataTableInfos = [
-  {
-    id: "1",
-    name: "銷售數據",
-    file_path: "ttt.ss.ddf",
-    created_at: "2023-10-26",
-    updated_at: "2023-10-26",
-    fileSize: "1.2 MB",
-  },
-  {
-    id: "2",
-    name: "客戶資訊",
-    file_path: "ttt.ss.ddf",
-    created_at: "2023-10-25",
-    updated_at: "2023-10-25",
-    fileSize: "800 KB",
-  },
-  {
-    id: "3",
-    name: "庫存報表",
-    file_path: "ttt.ss.ddf",
-    created_at: "2023-10-24",
-    updated_at: "2023-10-24",
-    fileSize: "3.5 MB",
-  },
-];
+import type { DataTableInfo } from "shared/types/dataTable";
+import type { CreateTableNavigateState, PageConfig } from "../types";
 
 export const DataTablesPage = () => {
   const [searchText, setSearchText] = useState("");
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"card" | "list">("card");
+  const [tableInfos, setTableInfos] = useState<DataTableInfo[]>([]); // 真正從後端來的資料
+  const navigate = useNavigate();
+  console.log("DataTablesPage");
+
+  useEffect(() => {
+    // 載入後端資料表資訊
+    refreshTableInfos();
+  }, []);
+
+  const refreshTableInfos = () => {
+    window.api.getAllTableInfos().then((tables) => {
+      setTableInfos(tables);
+    });
+  };
 
   // 根據搜尋關鍵字過濾資料
-  const filteredDataTables = fakeDataTableInfos.filter((table) =>
+  const filteredDataTables = tableInfos.filter((table) =>
     table.name.toLowerCase().includes(searchText.toLowerCase())
   );
 
@@ -63,6 +52,11 @@ export const DataTablesPage = () => {
     if (newViewMode !== null) {
       setViewMode(newViewMode);
     }
+  };
+
+  const handleNewTableClick = () => {
+    const state: CreateTableNavigateState = { editorMode: "create" };
+    navigate("/data-tables/edit", { state });
   };
 
   // 頁面配置
@@ -116,11 +110,21 @@ export const DataTablesPage = () => {
                 onChange={(e) => setSearchText(e.target.value)}
               />
             </Grid>
-            {/* 上傳按鈕 */}
+            {/* 新增表格按鈕 */}
             <Grid>
               <Button
                 variant="contained"
                 startIcon={<AddIcon />}
+                onClick={() => handleNewTableClick()}
+              >
+                新增資料表格
+              </Button>
+            </Grid>
+            {/* 上傳按鈕 */}
+            <Grid>
+              <Button
+                variant="contained"
+                startIcon={<UploadIcon />}
                 onClick={() => setUploadDialogOpen(true)}
               >
                 上傳資料表格
@@ -130,7 +134,11 @@ export const DataTablesPage = () => {
         </Grid>
 
         {/* 將 viewMode 作為 props 傳遞給 DataTableList */}
-        <DataTableList dataTables={filteredDataTables} viewMode={viewMode} />
+        <DataTableList
+          dataTables={filteredDataTables}
+          viewMode={viewMode}
+          refreshTableInfos={refreshTableInfos}
+        />
 
         {/* 上傳資料表格對話框 */}
         <UploadDataTableDialog

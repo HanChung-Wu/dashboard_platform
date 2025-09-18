@@ -1,3 +1,5 @@
+import type { TableId } from "shared/types/dataTable";
+
 // src/types.tsx
 export interface TocItem {
   label: string;
@@ -17,3 +19,21 @@ export interface PageConfig {
   rightPanelContent?: React.ReactNode;
   content: React.ReactNode;
 }
+
+export type EditorMode = "create" | "edit" | "upload" | null;
+export interface CreateTableNavigateState {
+  editorMode: "create";
+}
+export interface EditTableNavigateState {
+  editorMode: "edit";
+  tableId: TableId;
+}
+export interface UploadTableNavigateState {
+  editorMode: "upload";
+  file: File;
+}
+export type DataTableNavigateState =
+  | CreateTableNavigateState
+  | EditTableNavigateState
+  | UploadTableNavigateState
+  | null;

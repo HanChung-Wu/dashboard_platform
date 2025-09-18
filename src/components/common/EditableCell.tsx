@@ -1,16 +1,13 @@
 // src/components/common/EditableCell.tsx
 import React from "react";
 import { TableCell, TextField, Tooltip, Typography } from "@mui/material";
+import type { DataValue } from "shared/types/dataTable";
 type EditableCellProps = {
   rowIndex: number;
   colIndex: number;
   value: string | number;
   disabled?: boolean;
-  onChange: (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-    rowIndex: number,
-    colIndex: number
-  ) => void;
+  onChange: (rowIndex: number, colIndex: number, newValue: DataValue) => void;
 };
 const EditableCell = React.memo<EditableCellProps>(
   ({ rowIndex, colIndex, value, onChange, disabled = false }) => {
@@ -36,7 +33,7 @@ const EditableCell = React.memo<EditableCellProps>(
         {isEditing ? (
           <TextField
             value={value}
-            onChange={(e) => onChange(e, rowIndex, colIndex)}
+            onChange={(e) => onChange(rowIndex, colIndex, e.target.value)}
             onBlur={() => setIsEditing(false)}
             autoFocus
             variant="standard"
