@@ -1,5 +1,5 @@
 // src/pages/DataTableEditorPage.tsx
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Box, Typography, CircularProgress, Alert } from "@mui/material";
 import { PageWrapper } from "../components/layout/PageWrapper";
@@ -7,18 +7,26 @@ import EditableTitle from "../components/common/EditableTitle";
 import ConfirmCancelButtons from "../components/common/ConfirmCancelButtons";
 import DataTable from "../components/common/DataTable";
 import PageHeader from "../components/common/PageHeader";
-import { useFileParser } from "../hooks/useFileParser";
 import { useTableEditor } from "../hooks/useTableEditor";
+import { useTableDataInitializer } from "../hooks/useTableDataInitializer.tsx";
+import type { EditorMode } from "src/types.tsx";
 
 export const DataTableEditorPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
+
+  const editorMode: EditorMode = location.state?.editorMode || null;
   const tableId: number | undefined = location.state?.tableId;
   const file: File | null = location.state?.file || null;
-  const [disabled, setDisabled] = useState(false);
 
-  // 使用自定義 hooks
-  const { loading, data: parsedData, error } = useFileParser(file);
+  // 1. 使用新的 Hook 來統一處理資料初始化和載入狀態
+  const { loading, error, initialState } = useTableDataInitializer(
+    editorMode,
+    tableId,
+    file
+  );
+
+  // 2. 將初始資料傳遞給 useTableEditor
   const {
     tableName,
     setTableName,
@@ -26,60 +34,33 @@ export const DataTableEditorPage: React.FC = () => {
     setIsEditingName,
     data,
     handleCellChange,
-    updateData,
-  } = useTableEditor(null, file?.name.split(".")[0] || "未命名表格");
+  } = useTableEditor(
+    initialState?.data || null,
+    initialState?.name || "未命名表格"
+  );
 
-  console.log("DataTableEditorPage:", location.state, parsedData);
-  // 當解析完成時更新資料
-  useEffect(() => {
-    if (tableId) {
-      // 若有 id，從後端載入
-      window.api.getTable(tableId).then((res) => {
-        setTableName(res.info.name);
-        updateData(res.data); // 假設 rows 是表格的資料列
-      });
-    } else if (parsedData) {
-      // 否則從上傳的檔案解析
-      updateData(parsedData);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tableId, parsedData]);
-
-  const handleTitleChange = (title: string) => {
-    setTableName(title);
-    if (!title.trim()) {
-      setDisabled(true);
-    } else {
-      setDisabled(false);
-    }
-  };
-
+  // 3. 將儲存邏輯獨立出來
   const handleConfirm = async () => {
-    if (!data) return;
-    if (!tableName.trim()) {
-      alert("請輸入表格名稱");
+    if (!data || !tableName.trim() || error) {
+      alert("無法儲存，請檢查表格名稱和資料。");
       return;
     }
-    if (error) {
-      alert("無法儲存有錯誤的表格");
-      return;
+    try {
+      if (initialState?.id) {
+        console.log(`確認並更新表格: ${tableName}`);
+        await window.api.updateTable(initialState.id, tableName, data);
+        console.log("更新成功!");
+      } else {
+        console.log(`確認並儲存表格: ${tableName}`);
+        const tableInfo = { name: tableName, description: "" };
+        await window.api.uploadTable(tableInfo, data);
+        console.log("儲存成功!");
+      }
+      navigate("/data-tables");
+    } catch (e: unknown) {
+      console.error("儲存失敗:", e);
+      alert("儲存表格時發生錯誤。");
     }
-    if (tableId) {
-      console.log(`確認並更新表格: ${tableName}`);
-      const dataTableWithInfo = await window.api.updateTable(
-        tableId,
-        tableName,
-        data
-      );
-      console.log("更新成功:", dataTableWithInfo);
-    } else {
-      console.log(`確認並儲存表格: ${tableName}`);
-      // 這裡可以加入儲存資料到後端的邏輯
-      const tableInfo = { name: tableName, description: "" };
-      const dataTableInfo = await window.api.uploadTable(tableInfo, data);
-      console.log("儲存成功:", dataTableInfo);
-    }
-    navigate("/data-tables");
   };
 
   const handleCancel = () => {
@@ -90,33 +71,21 @@ export const DataTableEditorPage: React.FC = () => {
   const renderContent = () => {
     if (loading) return <CircularProgress />;
     if (error) return <Alert severity="error">{error}</Alert>;
-    if (!data) return null;
+    if (!data) return <Alert severity="info">無可編輯的表格資料。</Alert>;
 
     return <DataTable data={data} onCellChange={handleCellChange} />;
   };
 
-  const renderHeaderLeftContent = () => {
-    if (error) {
-      return (
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <Typography variant="h4" sx={{ mr: 1, fontWeight: "bold" }}>
-            無檔案資料
-          </Typography>
-        </Box>
-      );
-    }
-
-    return (
-      <EditableTitle
-        title={tableName}
-        onTitleChange={handleTitleChange}
-        isEditing={isEditingName}
-        onEditingChange={setIsEditingName}
-        label="表格名稱"
-        placeholder="請輸入表格名稱"
-      />
-    );
-  };
+  const renderHeaderLeftContent = () => (
+    <EditableTitle
+      title={tableName}
+      onTitleChange={setTableName}
+      isEditing={isEditingName}
+      onEditingChange={setIsEditingName}
+      label="表格名稱"
+      placeholder="請輸入表格名稱"
+    />
+  );
 
   const pageConfig = {
     breadcrumbItems: [
@@ -132,7 +101,7 @@ export const DataTableEditorPage: React.FC = () => {
               onConfirm={handleConfirm}
               onCancel={handleCancel}
               showConfirm={!error}
-              disabled={disabled || loading || !!error || !data}
+              disabled={loading || !!error || !data || !tableName.trim()}
             />
           }
         />

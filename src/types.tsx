@@ -19,3 +19,19 @@ export interface PageConfig {
 }
 
 export type EditorMode = "create" | "edit" | "upload" | null;
+export interface CreateTableNavigateState {
+  editorMode: "create";
+}
+export interface EditTableNavigateState {
+  editorMode: "edit";
+  tableId: number;
+}
+export interface UploadTableNavigateState {
+  editorMode: "upload";
+  file: File;
+}
+export type DataTableNavigateState =
+  | CreateTableNavigateState
+  | EditTableNavigateState
+  | UploadTableNavigateState
+  | null;
