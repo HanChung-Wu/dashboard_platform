@@ -16,12 +16,13 @@ export interface DataTableInfo {
   columnInfos?: ColumnInfo[];
 }
 
-export type DataType = string | number | boolean | null | undefined;
-export type DataRecord = Record<string, DataType>;
-export type DataRow = DataType[];
+export type DataValue = string | number | boolean | null | undefined;
+export type DataRecord = Record<string, DataValue>;
+export type DataRow = DataValue[];
 export type DataTableRecordSchema = DataRecord[];
+export type DataTableHeader = string;
 export interface DataTableHeaderSchema {
-  headers: string[];
+  headers: DataTableHeader[];
   rows: DataRow[];
 }
 export interface DataTableWithInfo {
