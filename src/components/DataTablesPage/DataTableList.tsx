@@ -15,11 +15,13 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Link,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useState } from "react";
 import type { DataTableInfo } from "shared/types/dataTable";
 import { DeleteWarningDialog } from "../common/DeleteWarningDialog";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
   dataTables: DataTableInfo[];
@@ -38,6 +40,15 @@ export const DataTableList = ({
     string | number | null
   >(null);
   const [openDialog, setOpenDialog] = useState(false);
+  const navigate = useNavigate();
+
+  const handleTableClick = (
+    _event: React.MouseEvent<HTMLElement>,
+    tableId: string | number
+  ) => {
+    console.log(`點擊了表格 ${tableId}`);
+    navigate("/data-tables/edit", { state: { tableId: tableId } });
+  };
 
   const handleMenuClick = (
     event: React.MouseEvent<HTMLElement>,
@@ -88,7 +99,11 @@ export const DataTableList = ({
         <TableBody>
           {dataTables.map((table) => (
             <TableRow key={table.id}>
-              <TableCell>{table.name}</TableCell>
+              <TableCell>
+                <Link onClick={(e) => handleTableClick(e, table.id)}>
+                  {table.name}
+                </Link>
+              </TableCell>
               <TableCell>{table.updated_at}</TableCell>
               <TableCell>{table.fileSize}</TableCell>
               <TableCell align="right">
@@ -122,7 +137,9 @@ export const DataTableList = ({
                   }}
                 >
                   <Typography variant="h6" component="div">
-                    {table.name}
+                    <Link onClick={(e) => handleTableClick(e, table.id)}>
+                      {table.name}
+                    </Link>
                   </Typography>
                   <IconButton
                     aria-label="more"
