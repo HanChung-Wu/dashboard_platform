@@ -19,9 +19,10 @@ import {
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useState } from "react";
-import type { DataTableInfo } from "shared/types/dataTable";
+import type { DataTableInfo, TableId } from "shared/types/dataTable";
 import { DeleteWarningDialog } from "../common/DeleteWarningDialog";
 import { useNavigate } from "react-router-dom";
+import type { EditTableNavigateState } from "src/types";
 
 interface Props {
   dataTables: DataTableInfo[];
@@ -36,23 +37,27 @@ export const DataTableList = ({
   refreshTableInfos,
 }: Props) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selectedTableId, setSelectedTableId] = useState<
-    string | number | null
-  >(null);
+  const [selectedTableId, setSelectedTableId] = useState<TableId | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const navigate = useNavigate();
 
   const handleTableClick = (
     _event: React.MouseEvent<HTMLElement>,
-    tableId: string | number
+    tableId: TableId
   ) => {
     console.log(`點擊了表格 ${tableId}`);
-    navigate("/data-tables/edit", { state: { tableId: tableId } });
+    const state: EditTableNavigateState = {
+      editorMode: "edit",
+      tableId: tableId,
+    };
+    navigate("/data-tables/edit", {
+      state,
+    });
   };
 
   const handleMenuClick = (
     event: React.MouseEvent<HTMLElement>,
-    tableId: string | number
+    tableId: TableId
   ) => {
     setAnchorEl(event.currentTarget);
     setSelectedTableId(tableId);
