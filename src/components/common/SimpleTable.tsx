@@ -1,4 +1,4 @@
-// src/components/common/DataTable.tsx
+// src/components/common/SimpleTable.tsx
 import React from "react";
 import {
   Table,

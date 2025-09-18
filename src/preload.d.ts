@@ -1,3 +1,4 @@
+// src/preload.d.ts
 export {};
 import type {
   DataTableHeaderSchema,
