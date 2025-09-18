@@ -17,3 +17,5 @@ export interface PageConfig {
   rightPanelContent?: React.ReactNode;
   content: React.ReactNode;
 }
+
+export type EditorMode = "create" | "edit" | "upload" | null;

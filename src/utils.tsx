@@ -1,6 +1,9 @@
 // src/utils.tsx
 import Papa from "papaparse";
-import type { DataTableHeaderSchema } from "shared/types/dataTable";
+import type {
+  DataTableHeaderSchema,
+  DataTableWithInfo,
+} from "shared/types/dataTable";
 
 // 針對 PapaParse 的資料，定義一個更精確的型別
 interface PapaResultRow {
@@ -64,4 +67,10 @@ export const parseDataFile = (file: File): Promise<DataTableHeaderSchema> => {
       reject(new Error("不支援的檔案類型。"));
     }
   });
+};
+
+export const getDataTableWithInfo = (
+  tableId: number
+): Promise<DataTableWithInfo> => {
+  return window.api.getTable(tableId);
 };

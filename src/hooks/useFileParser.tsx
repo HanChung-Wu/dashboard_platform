@@ -9,7 +9,9 @@ interface UseFileParserReturn {
   error: string | null;
 }
 
-export const useFileParser = (file: File | null): UseFileParserReturn => {
+export const useFileParser = (
+  file: File | null | undefined
+): UseFileParserReturn => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<DataTableHeaderSchema | null>(null);
   const [error, setError] = useState<string | null>(null);
