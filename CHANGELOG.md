@@ -4,6 +4,39 @@
 
 ---
 
+## [0.2.0](https://github.com/ohayowu314/dashboard_platform/compare/v0.1.0...v0.2.0) (2025-09-19)
+
+
+### ⚠ BREAKING CHANGES 重大變更
+
+* **types:** Some type imports must now reference `shared/types` instead of local `types` files 部分類型導入現在必須引用 `shared/types` 文件，而不是本地 `types` 文件 ([942efe3](https://github.com/ohayowu314/dashboard_platform/commit/942efe30a6cc85152bef31fe4f78616fa33ec484)), closes [#30](https://github.com/ohayowu314/dashboard_platform/issues/30)
+
+  * **types:** move shared types to dedicated directory and update imports 將共用類型移至專用目錄並更新匯入 ([0b3b180](https://github.com/ohayowu314/dashboard_platform/commit/0b3b180235398086858581c04db8f72e767f8908))
+
+
+### Features 新功能
+
+#### 📊 Data Tables
+
+* add navigation for creating new data table 新增 **建立新資料表** 功能 ([644544c](https://github.com/ohayowu314/dashboard_platform/commit/644544c0fce0082b0d97a79d45ec025597c5028e))
+* support table names clickable to navigate to edit view 新增 **點擊表格名稱導向編輯檢視** 功能 ([7754eaf](https://github.com/ohayowu314/dashboard_platform/commit/7754eaf51a862c6b7eaa7cfa1a91dc26232ea316))
+* add **delete confirmation dialog** for data tables 新增資料表 **刪除確認對話方塊** ([b1de479](https://github.com/ohayowu314/dashboard_platform/commit/b1de47928bcf7aaf00f54104479a78f665efd660))
+* Unified editing pages and support backend table loading/updating 統一編輯頁面並支援 **後端表單載入/更新** ([#32](https://github.com/ohayowu314/dashboard_platform/issues/32), [c2d444a](https://github.com/ohayowu314/dashboard_platform/commit/c2d444afa6678f3401e97314c6ce1ca671b4a625))
+  * add support for updating data tables and unify data schema 支援 **資料表更新與統一資料模式** ([99060d2](https://github.com/ohayowu314/dashboard_platform/commit/99060d21237a20cdb9b4bf920eb4029ce85f46c5))
+  * support editing and updating data tables via new API 新增透過 **新 API 編輯與更新資料表** ([94932e3](https://github.com/ohayowu314/dashboard_platform/commit/94932e3eefc1913ff9d8a335fc94e1f5dd0f2e3a))
+
+#### 🪝 Hooks
+
+* add `useTableDataInitializer` (for initializing data) 新增 `useTableDataInitializer`：初始化資料
+* add `useTableGetter` (responsible for obtaining data table content and information from the backend) 新增 `useTableGetter`：取得後端資料表內容與資訊
+  ([b3cba61](https://github.com/ohayowu314/dashboard_platform/commit/b3cba615d3d5365bfef9130b6845066b0649aff7))
+
+#### 🖼️ UI & Layout
+
+* **RightPanel**： Supports right panel title and collapsibility, and updates documentation. 支援標題、可折疊功能，並更新文件 ([#33](https://github.com/ohayowu314/dashboard_platform/issues/33), [a554f1b](https://github.com/ohayowu314/dashboard_platform/commit/a554f1bfec523f0dbabe9a34663801ad20cb2008), [f207263](https://github.com/ohayowu314/dashboard_platform/commit/f207263378f1f140ce0de8064fc2eb82fcdcb7a8))
+* **RightPanel**： improve RightPanel layout and add default text 改進佈局並新增預設文字 ([#34](https://github.com/ohayowu314/dashboard_platform/issues/34), [a8215b5](https://github.com/ohayowu314/dashboard_platform/commit/a8215b52709bcffcb98863aedf31da409b012397))
+
+
 ## [0.1.0](https://github.com/ohayowu314/dashboard_platform/compare/v0.1.0-pre-alpha...v0.1.0) (2025-09-15)
 
 
