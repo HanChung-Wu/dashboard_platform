@@ -39,7 +39,9 @@ export const RightPanel = () => {
 
   return (
     <div className="right-panel">
-      <div className="right-panel-title">{rightPanelTitle}</div>{" "}
+      <div className="right-panel-title">
+        {rightPanelTitle || "右側面板標題"}
+      </div>{" "}
       <IconButton
         aria-label="close"
         onClick={handleClose}
@@ -52,7 +54,7 @@ export const RightPanel = () => {
       >
         <CloseIcon />
       </IconButton>
-      <div className="right-panel-content">{rightPanelContent}</div>
+      <div className="right-panel-content">{rightPanelContent || "無內容"}</div>
     </div>
   );
 };
