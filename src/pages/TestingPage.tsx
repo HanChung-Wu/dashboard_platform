@@ -51,9 +51,9 @@ export const TestingPage = () => {
           </Box>
         </div>
       }
+      rightPanelTitle="儀表板右側標題"
       rightPanelContent={
         <div>
-          <Typography variant="h6">儀表板右側內容</Typography>
           <p>這裡可以放圖表設定、說明、連結等。</p>
         </div>
       }

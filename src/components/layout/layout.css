@@ -35,3 +35,15 @@
     border-left: 1px solid #ddd;
     padding: 16px;
 }
+
+.right-panel-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+
+.right-panel-content {
+    overflow-y: auto;
+    max-height: calc(100vh - 60px - 32px);
+    /* Adjust for top nav and padding */
+}

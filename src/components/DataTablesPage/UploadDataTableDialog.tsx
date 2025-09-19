@@ -114,7 +114,19 @@ export const UploadDataTableDialog = ({ open, onClose }: Props) => {
 
   return (
     <Dialog open={open} onClose={handleCancel} maxWidth="sm" fullWidth>
-      <DialogTitle>上傳資料表格</DialogTitle>
+      <DialogTitle>上傳資料表格</DialogTitle>{" "}
+      <IconButton
+        aria-label="close"
+        onClick={handleCancel}
+        sx={(theme) => ({
+          position: "absolute",
+          right: 8,
+          top: 8,
+          color: theme.palette.grey[500],
+        })}
+      >
+        <CloseIcon />
+      </IconButton>
       <DialogContent dividers>
         <Typography variant="subtitle1" gutterBottom>
           上傳模式

@@ -1,7 +1,7 @@
 // src/pages/DataTableEditorPage.tsx
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Box, Typography, CircularProgress, Alert } from "@mui/material";
+import { Box, CircularProgress, Alert } from "@mui/material";
 import { PageWrapper } from "../components/layout/PageWrapper";
 import EditableTitle from "../components/common/EditableTitle";
 import ConfirmCancelButtons from "../components/common/ConfirmCancelButtons";
@@ -109,13 +109,9 @@ export const DataTableEditorPage: React.FC = () => {
         {renderContent()}
       </Box>
     ),
+    rightPanelTitle: "編輯控制面板",
     rightPanelContent: (
-      <Box sx={{ p: 2 }}>
-        <Typography variant="h6">編輯控制面板</Typography>
-        <Typography variant="body2" sx={{ mt: 1 }}>
-          這裡可以添加欄位類型、篩選、排序等控制項。
-        </Typography>
-      </Box>
+      <Box sx={{ p: 2 }}>這裡可以添加欄位類型、篩選、排序等控制項。</Box>
     ),
   };
 
