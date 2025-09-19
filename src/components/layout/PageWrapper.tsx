@@ -5,15 +5,21 @@ import type { PageConfig } from "../../types";
 
 export const PageWrapper = ({
   breadcrumbItems,
+  rightPanelTitle,
   rightPanelContent,
   content,
 }: Omit<PageConfig, "tocItems">) => {
-  const { setBreadcrumbItems, setRightPanelContent, setRightPanelEnabled } =
-    useLayoutContext();
+  const {
+    setBreadcrumbItems,
+    setRightPanelTitle,
+    setRightPanelContent,
+    setRightPanelEnabled,
+  } = useLayoutContext();
 
   useEffect(() => {
     setBreadcrumbItems(breadcrumbItems);
-    if (rightPanelContent) {
+    if (rightPanelTitle || rightPanelContent) {
+      setRightPanelTitle(rightPanelTitle);
       setRightPanelContent(rightPanelContent);
       setRightPanelEnabled(true);
     } else {

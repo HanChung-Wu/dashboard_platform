@@ -4,6 +4,7 @@ import type { BreadcrumbItem, PageConfig } from "../types";
 
 export interface LayoutState extends Omit<PageConfig, "content" | "tocItems"> {
   setBreadcrumbItems: (items: BreadcrumbItem[]) => void;
+  setRightPanelTitle: (title: React.ReactNode | null) => void;
 
   setRightPanelContent: (content: React.ReactNode | null) => void;
 
@@ -14,6 +15,9 @@ export interface LayoutState extends Omit<PageConfig, "content" | "tocItems"> {
 export const useLayoutStore = create<LayoutState>((set) => ({
   breadcrumbItems: [],
   setBreadcrumbItems: (items) => set({ breadcrumbItems: items }),
+
+  rightPanelTitle: null,
+  setRightPanelTitle: (title) => set({ rightPanelTitle: title }),
 
   rightPanelContent: null,
   setRightPanelContent: (content) => set({ rightPanelContent: content }),

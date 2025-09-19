@@ -3,9 +3,15 @@ import { useLayoutStore } from "../../stores/layoutStore";
 import "./layout.css";
 
 export const RightPanel = () => {
-  const { rightPanelEnabled, rightPanelContent } = useLayoutStore();
+  const { rightPanelEnabled, rightPanelTitle, rightPanelContent } =
+    useLayoutStore();
 
   if (!rightPanelEnabled) return null;
 
-  return <div className="right-panel">{rightPanelContent}</div>;
+  return (
+    <div className="right-panel">
+      <div className="right-panel-title">{rightPanelTitle}</div>
+      <div className="right-panel-content">{rightPanelContent}</div>
+    </div>
+  );
 };
