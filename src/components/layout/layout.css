@@ -36,6 +36,21 @@
     padding: 16px;
 }
 
+.right-panel-collapsed {
+    display: flex;
+    align-items: center;
+    /* 垂直置中 */
+    justify-content: flex-end;
+    /* 水平靠右 */
+    width: 40px;
+    background-color: #f0f0f0;
+}
+
+.right-panel-collapsed:hover {
+    background-color: #e0e0e0;
+    cursor: pointer;
+}
+
 .right-panel-title {
     font-size: 18px;
     font-weight: bold;

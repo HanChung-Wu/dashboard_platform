@@ -23,15 +23,7 @@ export const RightPanel = () => {
   if (!rightPanelEnabled)
     return (
       <div className="right-panel-collapsed" onClick={handleOpen}>
-        <IconButton
-          aria-label="open"
-          sx={{
-            position: "absolute",
-            top: "50%",
-            right: 0,
-            transform: "translateY(-50%)",
-          }}
-        >
+        <IconButton aria-label="open">
           <LeftArrow />
         </IconButton>
       </div>
