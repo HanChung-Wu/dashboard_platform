@@ -23,15 +23,7 @@ export const RightPanel = () => {
   if (!rightPanelEnabled)
     return (
       <div className="right-panel-collapsed" onClick={handleOpen}>
-        <IconButton
-          aria-label="open"
-          sx={{
-            position: "absolute",
-            top: "50%",
-            right: 0,
-            transform: "translateY(-50%)",
-          }}
-        >
+        <IconButton aria-label="open">
           <LeftArrow />
         </IconButton>
       </div>
@@ -39,7 +31,9 @@ export const RightPanel = () => {
 
   return (
     <div className="right-panel">
-      <div className="right-panel-title">{rightPanelTitle}</div>{" "}
+      <div className="right-panel-title">
+        {rightPanelTitle || "右側面板標題"}
+      </div>{" "}
       <IconButton
         aria-label="close"
         onClick={handleClose}
@@ -52,7 +46,7 @@ export const RightPanel = () => {
       >
         <CloseIcon />
       </IconButton>
-      <div className="right-panel-content">{rightPanelContent}</div>
+      <div className="right-panel-content">{rightPanelContent || "無內容"}</div>
     </div>
   );
 };
