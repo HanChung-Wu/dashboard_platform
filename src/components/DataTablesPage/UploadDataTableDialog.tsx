@@ -17,6 +17,7 @@ import {
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import CloseIcon from "@mui/icons-material/Close";
 import { useNavigate } from "react-router-dom";
+import type { UploadTableNavigateState } from "src/types";
 
 interface Props {
   open: boolean;
@@ -71,9 +72,14 @@ export const UploadDataTableDialog = ({ open, onClose }: Props) => {
       if (selectedFiles.length === 1) {
         console.log("單一檔案上傳，導航至上傳資料表格頁面...");
         // 使用 navigate 傳遞 state
-        navigate("/data-tables/edit", { state: { file: selectedFiles[0] } });
+        const state: UploadTableNavigateState = {
+          editorMode: "upload",
+          file: selectedFiles[0],
+        };
+        navigate("/data-tables/edit", { state });
       } else {
         console.log("多個檔案上傳，返回資料表格列表頁...");
+        // TODO : 多檔案上傳後的處理邏輯
         setSelectedFiles([]);
       }
     }, 2000);
@@ -108,7 +114,19 @@ export const UploadDataTableDialog = ({ open, onClose }: Props) => {
 
   return (
     <Dialog open={open} onClose={handleCancel} maxWidth="sm" fullWidth>
-      <DialogTitle>上傳資料表格</DialogTitle>
+      <DialogTitle>上傳資料表格</DialogTitle>{" "}
+      <IconButton
+        aria-label="close"
+        onClick={handleCancel}
+        sx={(theme) => ({
+          position: "absolute",
+          right: 8,
+          top: 8,
+          color: theme.palette.grey[500],
+        })}
+      >
+        <CloseIcon />
+      </IconButton>
       <DialogContent dividers>
         <Typography variant="subtitle1" gutterBottom>
           上傳模式

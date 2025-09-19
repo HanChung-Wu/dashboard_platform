@@ -3,12 +3,9 @@ import { Outlet } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { TopNav } from "./TopNav";
 import { RightPanel } from "./RightPanel";
-import { useLayoutContext } from "../../context/useLayoutContext";
 import "./layout.css";
 
 export const Layout = () => {
-  const { rightPanelEnabled } = useLayoutContext();
-
   return (
     <div className="layout-container">
       <Sidebar />
@@ -19,7 +16,7 @@ export const Layout = () => {
         </div>
       </div>
 
-      {rightPanelEnabled && <RightPanel />}
+      <RightPanel />
     </div>
   );
 };

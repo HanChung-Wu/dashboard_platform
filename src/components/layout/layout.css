@@ -35,3 +35,30 @@
     border-left: 1px solid #ddd;
     padding: 16px;
 }
+
+.right-panel-collapsed {
+    display: flex;
+    align-items: center;
+    /* 垂直置中 */
+    justify-content: flex-end;
+    /* 水平靠右 */
+    width: 40px;
+    background-color: #f0f0f0;
+}
+
+.right-panel-collapsed:hover {
+    background-color: #e0e0e0;
+    cursor: pointer;
+}
+
+.right-panel-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+
+.right-panel-content {
+    overflow-y: auto;
+    max-height: calc(100vh - 60px - 32px);
+    /* Adjust for top nav and padding */
+}

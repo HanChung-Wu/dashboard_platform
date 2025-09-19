@@ -1,3 +1,5 @@
+import type { TableId } from "shared/types/dataTable";
+
 // src/types.tsx
 export interface TocItem {
   label: string;
@@ -14,46 +16,25 @@ export interface BreadcrumbItem {
 export interface PageConfig {
   tocItems: TocItem[];
   breadcrumbItems: BreadcrumbItem[];
+  rightPanelTitle?: React.ReactNode;
   rightPanelContent?: React.ReactNode;
   content: React.ReactNode;
 }
 
-export type ColumnType = "string" | "number" | "boolean" | "date";
-export interface ColumnInfo {
-  name: string;
-  desc?: string;
-  type: ColumnType;
+export type EditorMode = "create" | "edit" | "upload" | null;
+export interface CreateTableNavigateState {
+  editorMode: "create";
 }
-
-export interface DataTableInfo {
-  id: string;
-  name: string;
-  uploadDate: string;
-  fileSize?: string | number;
-  columnInfos?: ColumnInfo[];
+export interface EditTableNavigateState {
+  editorMode: "edit";
+  tableId: TableId;
 }
-
-export type DataType = string | number | boolean | null | undefined;
-export type DataRow = Record<string, DataType>;
-export type DataTable = DataRow[];
-
-export interface ParsedData {
-  headers: string[];
-  rows: (string | number)[][];
+export interface UploadTableNavigateState {
+  editorMode: "upload";
+  file: File;
 }
-
-export interface DataTableWithInfo {
-  info: DataTableInfo;
-  data: DataTable;
-}
-
-export type Result<T, E> = Ok<T, E> | Err<T, E>;
-export class Ok<T, _> {
-  readonly type = "ok" as const;
-  constructor(public value: T) {}
-}
-
-export class Err<_, E> {
-  readonly type = "err" as const;
-  constructor(public error: E) {}
-}
+export type DataTableNavigateState =
+  | CreateTableNavigateState
+  | EditTableNavigateState
+  | UploadTableNavigateState
+  | null;

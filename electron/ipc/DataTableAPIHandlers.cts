@@ -1,6 +1,11 @@
 import { FileManager } from "../models/FileManager.cjs";
 import { DataTableManager } from "../models/DataTableManager.cjs";
-import { DataTable, DataTableInfo, IpcMainListener } from "../types.cjs";
+import { IpcMainListener } from "../types.cjs";
+import {
+  DataTableHeaderSchema,
+  DataTableWithInfo,
+  TableId,
+} from "shared/types/dataTable";
 
 export const DataTableAPIHandlers: Record<string, IpcMainListener> = {
   // 上傳資料表
@@ -9,7 +14,10 @@ export const DataTableAPIHandlers: Record<string, IpcMainListener> = {
     {
       tableInfo,
       content,
-    }: { tableInfo: { name: string; description?: string }; content: DataTable }
+    }: {
+      tableInfo: { name: string; description?: string };
+      content: DataTableHeaderSchema;
+    }
   ) => {
     const { name, description } = tableInfo;
     const directory = FileManager.getUserDataPath("tables");
@@ -26,20 +34,38 @@ export const DataTableAPIHandlers: Record<string, IpcMainListener> = {
   // 取得所有資料表資訊
   "get-all-table-infos": () => DataTableManager.getAllTableInfos(),
   // 取得單一資料表
-  "get-table": (
-    _event,
-    id: number
-  ): { info: DataTableInfo; data: DataTable } => {
+  "get-table": (_event, id: TableId): DataTableWithInfo => {
     const tableInfo = DataTableManager.getTableInfoById(id);
     if (!tableInfo) throw new Error("資料表不存在");
 
     const content = FileManager.readFile(tableInfo.file_path);
-    const data: DataTable = JSON.parse(content);
+    const data: DataTableHeaderSchema = JSON.parse(content);
 
     return { info: tableInfo, data };
   },
+  // 更新資料表
+  "update-table": (
+    _event,
+    {
+      id,
+      name,
+      data,
+    }: { id: TableId; name: string; data: DataTableHeaderSchema }
+  ): DataTableWithInfo => {
+    const tableInfo = DataTableManager.getTableInfoById(id);
+    if (!tableInfo) throw new Error("資料表不存在");
+
+    // 更新檔案內容
+    FileManager.saveFileWithPath(tableInfo.file_path, data);
+
+    // 更新資料表資訊
+    const updatedTable = DataTableManager.updateTableInfo({ id, name });
+    if (!updatedTable) throw new Error("資料表更新失敗");
+
+    return { info: updatedTable, data };
+  },
   // 刪除資料表
-  "delete-table": (_event, id: number) => {
+  "delete-table": (_event, id: TableId) => {
     const table = DataTableManager.getTableInfoById(id);
     if (!table) throw new Error("資料表不存在");
 

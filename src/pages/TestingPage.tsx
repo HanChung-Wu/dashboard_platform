@@ -1,4 +1,4 @@
-// src/pages/DashboardPage.tsx
+// src/pages/TestingPage.tsx
 import { Box, Typography } from "@mui/material";
 import { PageWrapper } from "../components/layout/PageWrapper";
 import { useLayoutContext } from "../context/useLayoutContext";
@@ -51,9 +51,9 @@ export const TestingPage = () => {
           </Box>
         </div>
       }
+      rightPanelTitle="儀表板右側標題"
       rightPanelContent={
         <div>
-          <Typography variant="h6">儀表板右側內容</Typography>
           <p>這裡可以放圖表設定、說明、連結等。</p>
         </div>
       }

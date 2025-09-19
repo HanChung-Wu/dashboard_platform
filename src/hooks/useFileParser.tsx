@@ -1,17 +1,19 @@
 // src/hooks/useFileParser.ts
 import { useState, useEffect } from "react";
 import { parseDataFile } from "../utils";
-import type { ParsedData } from "../types";
+import type { DataTableHeaderSchema } from "shared/types/dataTable";
 
 interface UseFileParserReturn {
   loading: boolean;
-  data: ParsedData | null;
+  data: DataTableHeaderSchema | null;
   error: string | null;
 }
 
-export const useFileParser = (file: File | null): UseFileParserReturn => {
+export const useFileParser = (
+  file: File | null | undefined
+): UseFileParserReturn => {
   const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<ParsedData | null>(null);
+  const [data, setData] = useState<DataTableHeaderSchema | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {

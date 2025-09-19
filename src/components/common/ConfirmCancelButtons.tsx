@@ -33,7 +33,7 @@ const ConfirmCancelButtons: React.FC<ConfirmCancelButtonsProps> = ({
         variant={cancelVariant}
         startIcon={<CancelIcon />}
         onClick={onCancel}
-        disabled={disabled}
+        // disabled={disabled}
       >
         {cancelText}
       </Button>

@@ -15,24 +15,49 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Link,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useState } from "react";
-import type { DataTableInfo } from "../../types";
+import type { DataTableInfo, TableId } from "shared/types/dataTable";
+import { DeleteWarningDialog } from "../common/DeleteWarningDialog";
+import { useNavigate } from "react-router-dom";
+import type { EditTableNavigateState } from "src/types";
 
 interface Props {
   dataTables: DataTableInfo[];
   // 新增 viewMode 屬性
   viewMode: "card" | "list";
+  refreshTableInfos: () => void;
 }
 
-export const DataTableList = ({ dataTables, viewMode }: Props) => {
+export const DataTableList = ({
+  dataTables,
+  viewMode,
+  refreshTableInfos,
+}: Props) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
+  const [selectedTableId, setSelectedTableId] = useState<TableId | null>(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const navigate = useNavigate();
+
+  const handleTableClick = (
+    _event: React.MouseEvent<HTMLElement>,
+    tableId: TableId
+  ) => {
+    console.log(`點擊了表格 ${tableId}`);
+    const state: EditTableNavigateState = {
+      editorMode: "edit",
+      tableId: tableId,
+    };
+    navigate("/data-tables/edit", {
+      state,
+    });
+  };
 
   const handleMenuClick = (
     event: React.MouseEvent<HTMLElement>,
-    tableId: string
+    tableId: TableId
   ) => {
     setAnchorEl(event.currentTarget);
     setSelectedTableId(tableId);
@@ -46,6 +71,22 @@ export const DataTableList = ({ dataTables, viewMode }: Props) => {
   const handleAction = (action: string) => {
     console.log(`對表格 ${selectedTableId} 執行操作: ${action}`);
     handleMenuClose();
+  };
+
+  const closeDeleteDialog = () => {
+    setOpenDialog(false);
+    handleMenuClose();
+  };
+  const openDeleteDialog = () => {
+    setOpenDialog(true);
+    setAnchorEl(null);
+  };
+  const handleConfirmDelete = () => {
+    console.log(`刪除表格 ${selectedTableId}`);
+    window.api.deleteTable(selectedTableId!);
+    setOpenDialog(false);
+    handleMenuClose();
+    refreshTableInfos();
   };
 
   // 渲染列表的 Helper 函式
@@ -63,8 +104,12 @@ export const DataTableList = ({ dataTables, viewMode }: Props) => {
         <TableBody>
           {dataTables.map((table) => (
             <TableRow key={table.id}>
-              <TableCell>{table.name}</TableCell>
-              <TableCell>{table.uploadDate}</TableCell>
+              <TableCell>
+                <Link onClick={(e) => handleTableClick(e, table.id)}>
+                  {table.name}
+                </Link>
+              </TableCell>
+              <TableCell>{table.updated_at}</TableCell>
               <TableCell>{table.fileSize}</TableCell>
               <TableCell align="right">
                 <IconButton
@@ -97,7 +142,9 @@ export const DataTableList = ({ dataTables, viewMode }: Props) => {
                   }}
                 >
                   <Typography variant="h6" component="div">
-                    {table.name}
+                    <Link onClick={(e) => handleTableClick(e, table.id)}>
+                      {table.name}
+                    </Link>
                   </Typography>
                   <IconButton
                     aria-label="more"
@@ -107,7 +154,7 @@ export const DataTableList = ({ dataTables, viewMode }: Props) => {
                   </IconButton>
                 </Box>
                 <Typography variant="body2" color="text.secondary">
-                  上傳日期: {table.uploadDate}
+                  上傳日期: {table.updated_at}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   檔案大小: {table.fileSize}
@@ -135,19 +182,23 @@ export const DataTableList = ({ dataTables, viewMode }: Props) => {
       ) : (
         <>{viewMode === "card" ? renderCards() : renderList()}</>
       )}
-
       {/* 單一表格操作選單 (保持不變) */}
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
       >
-        <MenuItem onClick={() => handleAction("瀏覽")}>瀏覽</MenuItem>
-        <MenuItem onClick={() => handleAction("編輯")}>編輯</MenuItem>
         <MenuItem onClick={() => handleAction("更新")}>更新</MenuItem>
         <MenuItem onClick={() => handleAction("下載")}>下載</MenuItem>
-        <MenuItem onClick={() => handleAction("刪除")}>刪除</MenuItem>
+        <MenuItem onClick={() => openDeleteDialog()}>刪除</MenuItem>
       </Menu>
+      <DeleteWarningDialog
+        title="刪除資料表格"
+        content="確定要刪除這個資料表格嗎？此操作無法復原。"
+        open={openDialog}
+        handleClose={closeDeleteDialog}
+        handleComfirm={handleConfirmDelete}
+      />
     </Box>
   );
 };
